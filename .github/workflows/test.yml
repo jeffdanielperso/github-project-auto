@@ -9,6 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add label `qa-ready`
-        uses: jeffdanielperso/github-project-auto@vlatest
+        uses: jeffdanielperso/github-project-auto@latest
         with:
           add-labels: "qa-ready"
