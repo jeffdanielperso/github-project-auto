@@ -109,6 +109,7 @@ function run() {
                 issue_number: issueNumber,
                 labels
             });
+            console.log('test A LA CON');
             return `Updated labels in ${issueNumber}. Added: ${addLabels}. Removed: ${removeLabels}.`;
         }
         catch (error) {

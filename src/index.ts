@@ -86,6 +86,7 @@ async function run(): Promise<string> {
       labels
     });
 
+    console.log('test A LA CON');
     return `Updated labels in ${issueNumber}. Added: ${addLabels}. Removed: ${removeLabels}.`;
   } catch (error) {
     core.setFailed(error.message);
