@@ -14,20 +14,20 @@ export async function runProjectAction(
     if (!projectName || !columnName) return;
 
     // Get projects
-    // const orgProjects = await octokit.rest.projects.listForOrg({
-    //   org: actionData.owner
-    // });
+    const orgProjects = await octokit.rest.projects.listForOrg({
+      org: actionData.owner
+    });
     const repoProjects = await octokit.rest.projects.listForRepo({
       owner: actionData.owner,
       repo: actionData.repo
     });
-    const userProjects = await octokit.rest.projects.listForUser({
-      username: actionData.owner
-    });
+    // const userProjects = await octokit.rest.projects.listForUser({
+    //   username: actionData.owner
+    // });
 
-    // debugLog(`org ${JSON.stringify(orgProjects)}`);
+    debugLog(`org ${JSON.stringify(orgProjects)}`);
     debugLog(`repo ${JSON.stringify(repoProjects)}`);
-    debugLog(`user ${JSON.stringify(userProjects)}`);
+    // debugLog(`user ${JSON.stringify(userProjects)}`);
   } catch (error) {
     debugLog(`[Error/project.ts] ${error}`);
     throw error;
