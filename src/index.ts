@@ -24,9 +24,17 @@ async function run(): Promise<void> {
     debugAction(`Payload.Comment ${github.context.payload.comment}`);
     debugAction(`Payload.Issue ${github.context.payload.issue}`);
     debugAction(`Payload.PullRequest ${github.context.payload.pull_request}`);
-    debugAction(`Payload.Sender ${JSON.stringify(github.context.payload.sender)}`);
-    debugAction(`Payload.Repository ${JSON.stringify(github.context.payload.repository)}`);
-    debugAction(`Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card)}`);
+    debugAction(
+      `Payload.Sender ${JSON.stringify(github.context.payload.sender)}`
+    );
+    debugAction(
+      `Payload.Repository ${JSON.stringify(github.context.payload.repository)}`
+    );
+    debugAction(
+      `Payload.ProjectCard ${JSON.stringify(
+        github.context.payload.project_card
+      )}`
+    );
     // Getting octokit
     const octokit = github.getOctokit(repoToken);
 
