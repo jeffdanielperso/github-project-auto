@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import {getRepoToken} from './triggers/input';
 import {getOctokit, getGithubActionData} from './triggers/github';
 import {runLabelsAction} from './actions/labels';
+import {runProjectAction} from './actions/project';
 //import { debugLogs } from './debug/debug';
 
 async function run(): Promise<void> {
@@ -22,6 +23,7 @@ async function run(): Promise<void> {
 
     // Run actions
     runLabelsAction(octokit, actionData);
+    runProjectAction(octokit, actionData);
   } catch (error) {
     core.setFailed(error.message);
   }

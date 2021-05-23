@@ -60,6 +60,52 @@ exports.runLabelsAction = runLabelsAction;
 
 /***/ }),
 
+/***/ 950:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.runProjectAction = void 0;
+const debug_1 = __nccwpck_require__(371);
+function runProjectAction(octokit, actionData) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Get projects
+            const orgProjects = yield octokit.rest.projects.listForOrg({
+                org: actionData.owner
+            });
+            const repoProjects = yield octokit.rest.projects.listForRepo({
+                owner: actionData.owner,
+                repo: actionData.repo
+            });
+            const userProjects = yield octokit.rest.projects.listForUser({
+                username: actionData.owner
+            });
+            debug_1.debugLog(`org ${JSON.stringify(orgProjects)}`);
+            debug_1.debugLog(`org ${JSON.stringify(repoProjects)}`);
+            debug_1.debugLog(`org ${JSON.stringify(userProjects)}`);
+        }
+        catch (error) {
+            debug_1.debugLog(`[Error/project.ts] ${error}`);
+            throw error;
+        }
+    });
+}
+exports.runProjectAction = runProjectAction;
+
+
+/***/ }),
+
 /***/ 371:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -152,6 +198,7 @@ const core = __importStar(__nccwpck_require__(186));
 const input_1 = __nccwpck_require__(525);
 const github_1 = __nccwpck_require__(521);
 const labels_1 = __nccwpck_require__(999);
+const project_1 = __nccwpck_require__(950);
 //import { debugLogs } from './debug/debug';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -168,6 +215,7 @@ function run() {
             const octokit = github_1.getOctokit(repoToken);
             // Run actions
             labels_1.runLabelsAction(octokit, actionData);
+            project_1.runProjectAction(octokit, actionData);
         }
         catch (error) {
             core.setFailed(error.message);
