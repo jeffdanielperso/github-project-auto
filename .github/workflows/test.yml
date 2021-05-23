@@ -1,0 +1,14 @@
+name: Test Jeff
+on:
+  project_card:
+    types:
+      - moved
+jobs:
+  test-triggered:
+    if: github.event.project_card.column_id == '14225936'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add label `qa-ready`
+        uses: jeffdanielperso/github-project-auto@master
+        with:
+          add-labels: "qa-ready"

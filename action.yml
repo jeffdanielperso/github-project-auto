@@ -1,0 +1,23 @@
+name: 'Gihub Project Auto'
+description: 'Automation of Github projects'
+author: 'Jeff Daniel'
+inputs:
+  repo-token:
+    description: 'The GitHub token'
+    required: false
+    default: ${{ github.token }}
+  add-labels:
+    description: 'Labels to add to an issue, seperated by commas.'
+    required: false
+  remove-labels:
+    description: 'Labels to be removed from an issue, seperated by commas.'
+    required: false
+outputs:
+  test-output:
+    description: 'I see you'
+runs:
+  using: 'node12'
+  main: 'index.js'
+branding:
+  icon: fast-forward
+  color: purple

@@ -1,0 +1,36 @@
+{
+  "name": "github-project-auto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "build": "tsc",
+    "format": "prettier --write **/*.ts",
+    "format-check": "prettier --check **/*.ts",
+    "lint": "eslint src/**/*.ts",
+    "package": "ncc build --source-map --license licenses.txt",
+    "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeffdanielperso/github-project-auto.git"
+  },
+  "keywords": [],
+  "author": "Jeff Daniel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jeffdanielperso/github-project-auto/issues"
+  },
+  "homepage": "https://github.com/jeffdanielperso/github-project-auto#readme",
+  "dependencies": {
+    "@actions/core": "^1.3.0",
+    "@actions/github": "^5.0.0",
+    "@typescript-eslint/parser": "^4.24.0",
+    "@vercel/ncc": "^0.28.5",
+    "eslint": "^7.27.0",
+    "eslint-plugin-github": "^4.1.3",
+    "prettier": "^2.3.0",
+    "typescript": "^4.2.4"
+  }
+}
