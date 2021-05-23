@@ -1,6 +1,12 @@
 import * as github from '@actions/github';
 import {GitHub} from '@actions/github/lib/utils';
 
+export type GithubActionData = {
+  repo: string;
+  owner: string;
+  issueNumber: number | null;
+};
+
 export function getRepositoryName(): string {
   return github.context.repo.repo;
 }
@@ -9,7 +15,7 @@ export function getOwnerName(): string {
   return github.context.repo.owner;
 }
 
-export function getIssueNumber(): number {
+export function getIssueNumber(): number | null {
   const payload = github.context.payload;
 
   // Action coming from issues
@@ -22,9 +28,17 @@ export function getIssueNumber(): number {
     payload.project_card.content_url
   ) {
     return payload.project_card.content_url.split('/').pop();
-  } else {
-    throw new Error('Could not determinate related issue.');
   }
+
+  return null;
+}
+
+export function getGithubActionData(): GithubActionData {
+  return {
+    repo: getRepositoryName(),
+    owner: getOwnerName(),
+    issueNumber: getIssueNumber()
+  } as GithubActionData;
 }
 
 export function getOctokit(repoToken: string): InstanceType<typeof GitHub> {

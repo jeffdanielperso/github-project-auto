@@ -2,38 +2,114 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 999:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.setupLabelAction = void 0;
+exports.runLabelsAction = void 0;
 const input_1 = __nccwpck_require__(525);
-function setupLabelAction(
-// prettier-ignore
-issue) {
-    const labelsToAdd = input_1.getLabels(input_1.GithubProjectAutoInput.addLabels);
-    const labelsToRemove = input_1.getLabels(input_1.GithubProjectAutoInput.removeLabels);
-    if (labelsToRemove.length !== 0 || labelsToAdd.length !== 0) {
-        let labels = issue.data.labels.map(label => label.name);
-        for (const label of labelsToAdd) {
-            if (!labels.includes(labels)) {
-                labels.push(label);
+const debug_1 = __nccwpck_require__(371);
+function runLabelsAction(octokit, actionData) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Get last version of Issue
+            const issue = yield octokit.rest.issues.get({
+                owner: actionData.owner,
+                repo: actionData.repo,
+                issue_number: actionData.issueNumber
+            });
+            // Get Labels to Add & Remove
+            const labelsToAdd = input_1.getLabels(input_1.GithubProjectAutoInput.addLabels);
+            const labelsToRemove = input_1.getLabels(input_1.GithubProjectAutoInput.removeLabels);
+            if (labelsToAdd.length === 0 && labelsToRemove.length === 0)
+                return;
+            // Generate label list after Add & Remove
+            let labels = issue.data.labels.map(label => label.name);
+            for (const label of labelsToAdd) {
+                if (!labels.includes(labels)) {
+                    labels.push(label);
+                }
             }
+            labels = labels.filter(value => !labelsToRemove.includes(value));
+            // Update Issue labels
+            yield octokit.rest.issues.update({
+                owner: actionData.owner,
+                repo: actionData.repo,
+                issue_number: actionData.issueNumber,
+                labels
+            });
         }
-        labels = labels.filter(value => !labelsToRemove.includes(value));
-        return {
-            hasChanges: true,
-            labels
-        };
-    }
-    else {
-        return {
-            hasChanges: false
-        };
-    }
+        catch (error) {
+            debug_1.debugLog(`[Error/labels.ts] ${error}`);
+            throw error;
+        }
+    });
 }
-exports.setupLabelAction = setupLabelAction;
+exports.runLabelsAction = runLabelsAction;
+
+
+/***/ }),
+
+/***/ 371:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.debugLogs = exports.debugLog = void 0;
+const github = __importStar(__nccwpck_require__(438));
+function debugLog(value) {
+    console.log(value);
+}
+exports.debugLog = debugLog;
+function debugLogs() {
+    debugLog(`Action ${github.context.action}`);
+    debugLog(`Actor ${github.context.actor}`);
+    debugLog(`ApiUrl ${github.context.apiUrl}`);
+    debugLog(`EventName ${github.context.eventName}`);
+    debugLog(`Repo ${JSON.stringify(github.context.repo)}`);
+    debugLog(`Payload.Action ${github.context.payload.action}`);
+    debugLog(`Payload.Comment ${github.context.payload.comment}`);
+    debugLog(`Payload.Issue ${github.context.payload.issue}`);
+    debugLog(`Payload.PullRequest ${github.context.payload.pull_request}`);
+    // debugLog(
+    //   `Payload.Sender ${JSON.stringify(github.context.payload.sender)}`
+    // );
+    // debugLog(
+    //   `Payload.Repository ${JSON.stringify(github.context.payload.repository)}`
+    // );
+    debugLog(`Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card)}`);
+}
+exports.debugLogs = debugLogs;
 
 
 /***/ }),
@@ -81,31 +157,17 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Getting common data
-            const repoName = github_1.getRepositoryName();
-            const ownerName = github_1.getOwnerName();
-            const issueNumber = github_1.getIssueNumber();
+            const actionData = github_1.getGithubActionData();
             const repoToken = input_1.getRepoToken();
+            if (!actionData.issueNumber) {
+                throw new Error('Error: Could not determinate Issue.');
+            }
             // Uncomment for debug logs
             //debugLogs();
             // Getting octokit
             const octokit = github_1.getOctokit(repoToken);
-            // Getting last version of Issue
-            const issue = yield octokit.rest.issues.get({
-                owner: ownerName,
-                repo: repoName,
-                issue_number: issueNumber
-            });
-            // Get Label action setup
-            const labelActionSetup = labels_1.setupLabelAction(issue);
-            // updating issue
-            if (labelActionSetup.hasChanges) {
-                yield octokit.rest.issues.update({
-                    owner: ownerName,
-                    repo: repoName,
-                    issue_number: issueNumber,
-                    labels: labelActionSetup.labels
-                });
-            }
+            // Run actions
+            labels_1.runLabelsAction(octokit, actionData);
         }
         catch (error) {
             core.setFailed(error.message);
@@ -142,7 +204,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getOctokit = exports.getIssueNumber = exports.getOwnerName = exports.getRepositoryName = void 0;
+exports.getOctokit = exports.getGithubActionData = exports.getIssueNumber = exports.getOwnerName = exports.getRepositoryName = void 0;
 const github = __importStar(__nccwpck_require__(438));
 function getRepositoryName() {
     return github.context.repo.repo;
@@ -165,11 +227,17 @@ function getIssueNumber() {
         payload.project_card.content_url) {
         return payload.project_card.content_url.split('/').pop();
     }
-    else {
-        throw new Error('Could not determinate related issue.');
-    }
+    return null;
 }
 exports.getIssueNumber = getIssueNumber;
+function getGithubActionData() {
+    return {
+        repo: getRepositoryName(),
+        owner: getOwnerName(),
+        issueNumber: getIssueNumber()
+    };
+}
+exports.getGithubActionData = getGithubActionData;
 function getOctokit(repoToken) {
     return github.getOctokit(repoToken);
 }

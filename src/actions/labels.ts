@@ -1,19 +1,27 @@
-import {Endpoints} from '@octokit/types';
+import {GithubActionData} from '../triggers/github';
 import {getLabels, GithubProjectAutoInput} from '../triggers/input';
+import {GitHub} from '@actions/github/lib/utils';
+import {debugLog} from '../debug/debug';
 
-export type LabelActionSetup = {
-  hasChanges: boolean;
-  labels: string[] | null;
-};
+export async function runLabelsAction(
+  octokit: InstanceType<typeof GitHub>,
+  actionData: GithubActionData
+): Promise<void> {
+  try {
+    // Get last version of Issue
+    const issue = await octokit.rest.issues.get({
+      owner: actionData.owner,
+      repo: actionData.repo,
+      issue_number: actionData.issueNumber as number
+    });
 
-export function setupLabelAction(
-  // prettier-ignore
-  issue: Endpoints["GET /repos/{owner}/{repo}/issues/{issue_number}"]["response"]
-): LabelActionSetup {
-  const labelsToAdd = getLabels(GithubProjectAutoInput.addLabels);
-  const labelsToRemove = getLabels(GithubProjectAutoInput.removeLabels);
+    // Get Labels to Add & Remove
+    const labelsToAdd = getLabels(GithubProjectAutoInput.addLabels);
+    const labelsToRemove = getLabels(GithubProjectAutoInput.removeLabels);
 
-  if (labelsToRemove.length !== 0 || labelsToAdd.length !== 0) {
+    if (labelsToAdd.length === 0 && labelsToRemove.length === 0) return;
+
+    // Generate label list after Add & Remove
     let labels = issue.data.labels.map(label => label.name);
     for (const label of labelsToAdd) {
       if (!labels.includes(labels)) {
@@ -22,13 +30,15 @@ export function setupLabelAction(
     }
     labels = labels.filter(value => !labelsToRemove.includes(value));
 
-    return {
-      hasChanges: true,
+    // Update Issue labels
+    await octokit.rest.issues.update({
+      owner: actionData.owner,
+      repo: actionData.repo,
+      issue_number: actionData.issueNumber as number,
       labels
-    } as LabelActionSetup;
-  } else {
-    return {
-      hasChanges: false
-    } as LabelActionSetup;
+    });
+  } catch (error) {
+    debugLog(`[Error/labels.ts] ${error}`);
+    throw error;
   }
 }

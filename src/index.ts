@@ -1,25 +1,18 @@
 import * as core from '@actions/core';
-import {
-  getLabels,
-  getRepoToken,
-  GithubProjectAutoInput
-} from './triggers/input';
-import {
-  getRepositoryName,
-  getOwnerName,
-  getIssueNumber,
-  getOctokit
-} from './triggers/github';
-import {setupLabelAction} from './actions/labels';
+import {getRepoToken} from './triggers/input';
+import {getOctokit, getGithubActionData} from './triggers/github';
+import {runLabelsAction} from './actions/labels';
 //import { debugLogs } from './debug/debug';
 
 async function run(): Promise<void> {
   try {
     // Getting common data
-    const repoName = getRepositoryName();
-    const ownerName = getOwnerName();
-    const issueNumber = getIssueNumber();
+    const actionData = getGithubActionData();
     const repoToken = getRepoToken();
+
+    if (!actionData.issueNumber) {
+      throw new Error('Error: Could not determinate Issue.');
+    }
 
     // Uncomment for debug logs
     //debugLogs();
@@ -27,25 +20,8 @@ async function run(): Promise<void> {
     // Getting octokit
     const octokit = getOctokit(repoToken);
 
-    // Getting last version of Issue
-    const issue = await octokit.rest.issues.get({
-      owner: ownerName,
-      repo: repoName,
-      issue_number: issueNumber
-    });
-
-    // Get Label action setup
-    const labelActionSetup = setupLabelAction(issue);
-
-    // updating issue
-    if (labelActionSetup.hasChanges) {
-      await octokit.rest.issues.update({
-        owner: ownerName,
-        repo: repoName,
-        issue_number: issueNumber,
-        labels: labelActionSetup.labels
-      });
-    }
+    // Run actions
+    runLabelsAction(octokit, actionData);
   } catch (error) {
     core.setFailed(error.message);
   }
