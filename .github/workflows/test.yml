@@ -5,7 +5,7 @@ on:
       - moved
 jobs:
   test-triggered:
-    if: github.event.project_card.column_id == '14225936'
+    if: github.event.project_card.column_id == '14432400'
     runs-on: ubuntu-latest
     steps:
       - name: Add label `qa-ready`
