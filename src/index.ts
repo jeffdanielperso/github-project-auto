@@ -1,68 +1,34 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import {GithubProjectAutoInput} from './input';
+import {getLabels, getRepoToken, GithubProjectAutoInput} from './input';
+import {getRepositoryName, getOwnerName, getIssueNumber} from './payload';
 
-function getRepositoryName(): string {
-  const payload = github.context.payload;
-
-  if (payload.repository) {
-    return payload.repository.name;
-  }
-
-  throw new Error('Could not determinate Repository');
+function debugAction(value: string): void {
+  console.log(value);
 }
 
-function getOwner(): string {
-  const payload = github.context.payload;
-
-  if (payload.repository) {
-    return payload.repository.owner.login;
-  }
-
-  throw new Error('Could not determinate Repository');
-}
-
-function getIssueNumber(): number {
-  const payload = github.context.payload;
-
-  // Action coming from issues
-  if (payload.issue) {
-    return payload.issue.number;
-  } else if (payload.pull_request) {
-    return payload.pull_request.number;
-  } else if (
-    payload.project_card !== undefined &&
-    payload.project_card.content_url
-  ) {
-    return payload.project_card.content_url.split('/').pop();
-  } else throw new Error('Could not determinate related issue.');
-}
-
-function getRepoToken(): string {
-  return core.getInput(GithubProjectAutoInput.repoToken);
-}
-
-function getLabels(type: string): string[] {
-  const labels = core
-    .getInput(type)
-    .split(',')
-    .map(value => value.trim());
-
-  return labels.filter(value => ![''].includes(value));
-}
-
-async function run(): Promise<string> {
+async function run(): Promise<void> {
   try {
     // Getting common data
     const repoName = getRepositoryName();
-    const ownerName = getOwner();
+    const ownerName = getOwnerName();
     const issueNumber = getIssueNumber();
     const repoToken = getRepoToken();
-    const octokit = github.getOctokit(repoToken);
 
-    // Label management
-    const addLabels = getLabels(GithubProjectAutoInput.addLabels);
-    const removeLabels = getLabels(GithubProjectAutoInput.removeLabels);
+    debugAction(`Action ${github.context.action}`);
+    debugAction(`Actor ${github.context.actor}`);
+    debugAction(`ApiUrl ${github.context.apiUrl}`);
+    debugAction(`EventName ${github.context.eventName}`);
+    debugAction(`Repo ${github.context.repo}`);
+    debugAction(`Payload.Action ${github.context.payload.action}`);
+    debugAction(`Payload.Comment ${github.context.payload.comment}`);
+    debugAction(`Payload.Issue ${github.context.payload.issue}`);
+    debugAction(`Payload.PullRequest ${github.context.payload.pull_request}`);
+    debugAction(`Payload.Sender ${github.context.payload.sender}`);
+    debugAction(`Payload.Repository ${github.context.payload.repository}`);
+
+    // Getting octokit
+    const octokit = github.getOctokit(repoToken);
 
     // Getting last version of Issue
     const issue = await octokit.rest.issues.get({
@@ -71,6 +37,9 @@ async function run(): Promise<string> {
       issue_number: issueNumber
     });
 
+    // Label management
+    const addLabels = getLabels(GithubProjectAutoInput.addLabels);
+    const removeLabels = getLabels(GithubProjectAutoInput.removeLabels);
     let labels = issue.data.labels.map(label => label.name);
     for (const label of addLabels) {
       if (!labels.includes(labels)) {
@@ -79,18 +48,15 @@ async function run(): Promise<string> {
     }
     labels = labels.filter(value => !removeLabels.includes(value));
 
+    // updating issue
     await octokit.rest.issues.update({
       owner: ownerName,
       repo: repoName,
       issue_number: issueNumber,
       labels
     });
-
-    console.log('test A LA CON');
-    return `Updated labels in ${issueNumber}. Added: ${addLabels}. Removed: ${removeLabels}.`;
   } catch (error) {
     core.setFailed(error.message);
-    return `ERROR: ${error.message}`;
   }
 }
 

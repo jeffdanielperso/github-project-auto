@@ -38,6 +38,141 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
 const github = __importStar(__nccwpck_require__(438));
 const input_1 = __nccwpck_require__(657);
+const payload_1 = __nccwpck_require__(995);
+function debugAction(value) {
+    console.log(value);
+}
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Getting common data
+            const repoName = payload_1.getRepositoryName();
+            const ownerName = payload_1.getOwnerName();
+            const issueNumber = payload_1.getIssueNumber();
+            const repoToken = input_1.getRepoToken();
+            debugAction(`Action ${github.context.action}`);
+            debugAction(`Actor ${github.context.actor}`);
+            debugAction(`ApiUrl ${github.context.apiUrl}`);
+            debugAction(`EventName ${github.context.eventName}`);
+            debugAction(`Repo ${github.context.repo}`);
+            debugAction(`Payload.Action ${github.context.payload.action}`);
+            debugAction(`Payload.Comment ${github.context.payload.comment}`);
+            debugAction(`Payload.Issue ${github.context.payload.issue}`);
+            debugAction(`Payload.PullRequest ${github.context.payload.pull_request}`);
+            debugAction(`Payload.Sender ${github.context.payload.sender}`);
+            debugAction(`Payload.Repository ${github.context.payload.repository}`);
+            // Getting octokit
+            const octokit = github.getOctokit(repoToken);
+            // Getting last version of Issue
+            const issue = yield octokit.rest.issues.get({
+                owner: ownerName,
+                repo: repoName,
+                issue_number: issueNumber
+            });
+            // Label management
+            const addLabels = input_1.getLabels(input_1.GithubProjectAutoInput.addLabels);
+            const removeLabels = input_1.getLabels(input_1.GithubProjectAutoInput.removeLabels);
+            let labels = issue.data.labels.map(label => label.name);
+            for (const label of addLabels) {
+                if (!labels.includes(labels)) {
+                    labels.push(label);
+                }
+            }
+            labels = labels.filter(value => !removeLabels.includes(value));
+            // updating issue
+            yield octokit.rest.issues.update({
+                owner: ownerName,
+                repo: repoName,
+                issue_number: issueNumber,
+                labels
+            });
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+    });
+}
+run();
+
+
+/***/ }),
+
+/***/ 657:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getLabels = exports.getRepoToken = exports.GithubProjectAutoInput = void 0;
+const core = __importStar(__nccwpck_require__(186));
+var GithubProjectAutoInput;
+(function (GithubProjectAutoInput) {
+    GithubProjectAutoInput["repoToken"] = "repo-token";
+    GithubProjectAutoInput["addLabels"] = "add-labels";
+    GithubProjectAutoInput["removeLabels"] = "remove-labels";
+})(GithubProjectAutoInput = exports.GithubProjectAutoInput || (exports.GithubProjectAutoInput = {}));
+function getRepoToken() {
+    return core.getInput(GithubProjectAutoInput.repoToken);
+}
+exports.getRepoToken = getRepoToken;
+function getLabels(type) {
+    const labels = core
+        .getInput(type)
+        .split(',')
+        .map(value => value.trim());
+    return labels.filter(value => ![''].includes(value));
+}
+exports.getLabels = getLabels;
+
+
+/***/ }),
+
+/***/ 995:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getIssueNumber = exports.getOwnerName = exports.getRepositoryName = void 0;
+const github = __importStar(__nccwpck_require__(438));
 function getRepositoryName() {
     const payload = github.context.payload;
     if (payload.repository) {
@@ -45,13 +180,15 @@ function getRepositoryName() {
     }
     throw new Error('Could not determinate Repository');
 }
-function getOwner() {
+exports.getRepositoryName = getRepositoryName;
+function getOwnerName() {
     const payload = github.context.payload;
     if (payload.repository) {
         return payload.repository.owner.login;
     }
     throw new Error('Could not determinate Repository');
 }
+exports.getOwnerName = getOwnerName;
 function getIssueNumber() {
     const payload = github.context.payload;
     // Action coming from issues
@@ -65,77 +202,11 @@ function getIssueNumber() {
         payload.project_card.content_url) {
         return payload.project_card.content_url.split('/').pop();
     }
-    else
+    else {
         throw new Error('Could not determinate related issue.');
+    }
 }
-function getRepoToken() {
-    return core.getInput(input_1.GithubProjectAutoInput.repoToken);
-}
-function getLabels(type) {
-    const labels = core
-        .getInput(type)
-        .split(',')
-        .map(value => value.trim());
-    return labels.filter(value => ![''].includes(value));
-}
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            // Getting common data
-            const repoName = getRepositoryName();
-            const ownerName = getOwner();
-            const issueNumber = getIssueNumber();
-            const repoToken = getRepoToken();
-            const octokit = github.getOctokit(repoToken);
-            // Label management
-            const addLabels = getLabels(input_1.GithubProjectAutoInput.addLabels);
-            const removeLabels = getLabels(input_1.GithubProjectAutoInput.removeLabels);
-            // Getting last version of Issue
-            const issue = yield octokit.rest.issues.get({
-                owner: ownerName,
-                repo: repoName,
-                issue_number: issueNumber
-            });
-            let labels = issue.data.labels.map(label => label.name);
-            for (const label of addLabels) {
-                if (!labels.includes(labels)) {
-                    labels.push(label);
-                }
-            }
-            labels = labels.filter(value => !removeLabels.includes(value));
-            yield octokit.rest.issues.update({
-                owner: ownerName,
-                repo: repoName,
-                issue_number: issueNumber,
-                labels
-            });
-            console.log('test A LA CON');
-            return `Updated labels in ${issueNumber}. Added: ${addLabels}. Removed: ${removeLabels}.`;
-        }
-        catch (error) {
-            core.setFailed(error.message);
-            return `ERROR: ${error.message}`;
-        }
-    });
-}
-run();
-
-
-/***/ }),
-
-/***/ 657:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GithubProjectAutoInput = void 0;
-var GithubProjectAutoInput;
-(function (GithubProjectAutoInput) {
-    GithubProjectAutoInput["repoToken"] = "repo-token";
-    GithubProjectAutoInput["addLabels"] = "add-labels";
-    GithubProjectAutoInput["removeLabels"] = "remove-labels";
-})(GithubProjectAutoInput = exports.GithubProjectAutoInput || (exports.GithubProjectAutoInput = {}));
+exports.getIssueNumber = getIssueNumber;
 
 
 /***/ }),
