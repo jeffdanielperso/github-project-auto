@@ -1,23 +1,11 @@
 import * as github from '@actions/github';
 
 export function getRepositoryName(): string {
-  const payload = github.context.payload;
-
-  if (payload.repository) {
-    return payload.repository.name;
-  }
-
-  throw new Error('Could not determinate Repository');
+  return github.context.repo.repo;
 }
 
 export function getOwnerName(): string {
-  const payload = github.context.payload;
-
-  if (payload.repository) {
-    return payload.repository.owner.login;
-  }
-
-  throw new Error('Could not determinate Repository');
+  return github.context.repo.owner;
 }
 
 export function getIssueNumber(): number {

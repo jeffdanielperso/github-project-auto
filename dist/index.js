@@ -1,6 +1,63 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 928:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getIssueNumber = exports.getOwnerName = exports.getRepositoryName = void 0;
+const github = __importStar(__nccwpck_require__(438));
+function getRepositoryName() {
+    return github.context.repo.repo;
+}
+exports.getRepositoryName = getRepositoryName;
+function getOwnerName() {
+    return github.context.repo.owner;
+}
+exports.getOwnerName = getOwnerName;
+function getIssueNumber() {
+    const payload = github.context.payload;
+    // Action coming from issues
+    if (payload.issue) {
+        return payload.issue.number;
+    }
+    else if (payload.pull_request) {
+        return payload.pull_request.number;
+    }
+    else if (payload.project_card !== undefined &&
+        payload.project_card.content_url) {
+        return payload.project_card.content_url.split('/').pop();
+    }
+    else {
+        throw new Error('Could not determinate related issue.');
+    }
+}
+exports.getIssueNumber = getIssueNumber;
+
+
+/***/ }),
+
 /***/ 822:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -38,30 +95,38 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
 const github = __importStar(__nccwpck_require__(438));
 const input_1 = __nccwpck_require__(657);
-const payload_1 = __nccwpck_require__(995);
-function debugAction(value) {
+const github_1 = __nccwpck_require__(928);
+function debugLog(value) {
     console.log(value);
+}
+function debugLogs() {
+    debugLog(`Action ${github.context.action}`);
+    debugLog(`Actor ${github.context.actor}`);
+    debugLog(`ApiUrl ${github.context.apiUrl}`);
+    debugLog(`EventName ${github.context.eventName}`);
+    debugLog(`Repo ${JSON.stringify(github.context.repo)}`);
+    debugLog(`Payload.Action ${github.context.payload.action}`);
+    debugLog(`Payload.Comment ${github.context.payload.comment}`);
+    debugLog(`Payload.Issue ${github.context.payload.issue}`);
+    debugLog(`Payload.PullRequest ${github.context.payload.pull_request}`);
+    // debugLog(
+    //   `Payload.Sender ${JSON.stringify(github.context.payload.sender)}`
+    // );
+    // debugLog(
+    //   `Payload.Repository ${JSON.stringify(github.context.payload.repository)}`
+    // );
+    debugLog(`Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card)}`);
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Getting common data
-            const repoName = payload_1.getRepositoryName();
-            const ownerName = payload_1.getOwnerName();
-            const issueNumber = payload_1.getIssueNumber();
+            const repoName = github_1.getRepositoryName();
+            const ownerName = github_1.getOwnerName();
+            const issueNumber = github_1.getIssueNumber();
             const repoToken = input_1.getRepoToken();
-            debugAction(`Action ${github.context.action}`);
-            debugAction(`Actor ${github.context.actor}`);
-            debugAction(`ApiUrl ${github.context.apiUrl}`);
-            debugAction(`EventName ${github.context.eventName}`);
-            debugAction(`Repo ${JSON.stringify(github.context.repo)}`);
-            debugAction(`Payload.Action ${github.context.payload.action}`);
-            debugAction(`Payload.Comment ${github.context.payload.comment}`);
-            debugAction(`Payload.Issue ${github.context.payload.issue}`);
-            debugAction(`Payload.PullRequest ${github.context.payload.pull_request}`);
-            debugAction(`Payload.Sender ${JSON.stringify(github.context.payload.sender)}`);
-            debugAction(`Payload.Repository ${JSON.stringify(github.context.payload.repository)}`);
-            debugAction(`Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card)}`);
+            // Uncomment for debug logs
+            debugLogs();
             // Getting octokit
             const octokit = github.getOctokit(repoToken);
             // Getting last version of Issue
@@ -143,71 +208,6 @@ function getLabels(type) {
     return labels.filter(value => ![''].includes(value));
 }
 exports.getLabels = getLabels;
-
-
-/***/ }),
-
-/***/ 995:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getIssueNumber = exports.getOwnerName = exports.getRepositoryName = void 0;
-const github = __importStar(__nccwpck_require__(438));
-function getRepositoryName() {
-    const payload = github.context.payload;
-    if (payload.repository) {
-        return payload.repository.name;
-    }
-    throw new Error('Could not determinate Repository');
-}
-exports.getRepositoryName = getRepositoryName;
-function getOwnerName() {
-    const payload = github.context.payload;
-    if (payload.repository) {
-        return payload.repository.owner.login;
-    }
-    throw new Error('Could not determinate Repository');
-}
-exports.getOwnerName = getOwnerName;
-function getIssueNumber() {
-    const payload = github.context.payload;
-    // Action coming from issues
-    if (payload.issue) {
-        return payload.issue.number;
-    }
-    else if (payload.pull_request) {
-        return payload.pull_request.number;
-    }
-    else if (payload.project_card !== undefined &&
-        payload.project_card.content_url) {
-        return payload.project_card.content_url.split('/').pop();
-    }
-    else {
-        throw new Error('Could not determinate related issue.');
-    }
-}
-exports.getIssueNumber = getIssueNumber;
 
 
 /***/ }),

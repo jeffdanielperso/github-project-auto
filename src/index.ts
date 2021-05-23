@@ -1,10 +1,31 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import {getLabels, getRepoToken, GithubProjectAutoInput} from './input';
-import {getRepositoryName, getOwnerName, getIssueNumber} from './payload';
+import {getRepositoryName, getOwnerName, getIssueNumber} from './github';
 
-function debugAction(value: string): void {
+function debugLog(value: string): void {
   console.log(value);
+}
+
+function debugLogs(): void {
+  debugLog(`Action ${github.context.action}`);
+  debugLog(`Actor ${github.context.actor}`);
+  debugLog(`ApiUrl ${github.context.apiUrl}`);
+  debugLog(`EventName ${github.context.eventName}`);
+  debugLog(`Repo ${JSON.stringify(github.context.repo)}`);
+  debugLog(`Payload.Action ${github.context.payload.action}`);
+  debugLog(`Payload.Comment ${github.context.payload.comment}`);
+  debugLog(`Payload.Issue ${github.context.payload.issue}`);
+  debugLog(`Payload.PullRequest ${github.context.payload.pull_request}`);
+  // debugLog(
+  //   `Payload.Sender ${JSON.stringify(github.context.payload.sender)}`
+  // );
+  // debugLog(
+  //   `Payload.Repository ${JSON.stringify(github.context.payload.repository)}`
+  // );
+  debugLog(
+    `Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card)}`
+  );
 }
 
 async function run(): Promise<void> {
@@ -15,26 +36,9 @@ async function run(): Promise<void> {
     const issueNumber = getIssueNumber();
     const repoToken = getRepoToken();
 
-    debugAction(`Action ${github.context.action}`);
-    debugAction(`Actor ${github.context.actor}`);
-    debugAction(`ApiUrl ${github.context.apiUrl}`);
-    debugAction(`EventName ${github.context.eventName}`);
-    debugAction(`Repo ${JSON.stringify(github.context.repo)}`);
-    debugAction(`Payload.Action ${github.context.payload.action}`);
-    debugAction(`Payload.Comment ${github.context.payload.comment}`);
-    debugAction(`Payload.Issue ${github.context.payload.issue}`);
-    debugAction(`Payload.PullRequest ${github.context.payload.pull_request}`);
-    debugAction(
-      `Payload.Sender ${JSON.stringify(github.context.payload.sender)}`
-    );
-    debugAction(
-      `Payload.Repository ${JSON.stringify(github.context.payload.repository)}`
-    );
-    debugAction(
-      `Payload.ProjectCard ${JSON.stringify(
-        github.context.payload.project_card
-      )}`
-    );
+    // Uncomment for debug logs
+    debugLogs();
+
     // Getting octokit
     const octokit = github.getOctokit(repoToken);
 
