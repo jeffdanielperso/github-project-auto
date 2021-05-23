@@ -1,5 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { conformsTo } from 'lodash';
+import { isConstructorDeclaration, LanguageServiceMode } from 'typescript';
 
 enum InputId {
   repoToken = 'repo-token',
@@ -31,7 +33,7 @@ function getOwner(): string {
   throw "Could not determinate Repository";
 }
 
-function getIssue(): number {
+function getIssueNumber(): number {
   const payload = github.context.payload;
 
   // Action coming from issues
@@ -61,12 +63,12 @@ function getLabels(type: string): Array<string> {
   return labels.filter(value => ![""].includes(value));
 }
 
-async function run(): Promise<void> {
+async function run(): Promise<string> {
   try {
     // Getting common data
     const repoName = getRepositoryName();
-    const owner = getOwner();
-    const issue = getIssue();
+    const ownerName = getOwner();
+    const issueNumber = getIssueNumber();
     const repoToken = getRepoToken();
     const octokit = github.getOctokit(repoToken);
 
@@ -75,9 +77,33 @@ async function run(): Promise<void> {
     const removeLabels = getLabels(InputId.removeLabels);
 
     // Getting last version of Issue
-  } catch (error) {
-    core.setFailed(error.message)
+    var issue = await octokit.rest.issues.get({
+      owner: ownerName,
+      repo: repoName,
+      issue_number: issueNumber
+    });
+
+    let labels = issue.data.labels.map(label => label.name);
+    for (let labeltoAdd in addLabels) {
+      if (!labels.includes(labeltoAdd)) {
+        labels.push(labeltoAdd);
+      }
+    }
+    labels = labels.filter(value => !removeLabels.includes(value));
+
+    await octokit.rest.issues.update({
+      owner: ownerName,
+      repo: repoName,
+      issue_number: issueNumber,
+      labels: labels
+    });
+
+    return `Updated labels in ${issueNumber}. Added: ${addLabels}. Removed: ${removeLabels}.`;
+  }
+  catch (error) {
+    core.setFailed(error.message);
+    return `ERROR: ${error.message}`;
   }
 }
 
-run();
+run().then(result => console.log(result));
