@@ -21,13 +21,13 @@ export async function runProjectAction(
       owner: actionData.owner,
       repo: actionData.repo
     });
-    // const userProjects = await octokit.rest.projects.listForUser({
-    //   username: actionData.owner
-    // });
+    const userProjects = await octokit.rest.projects.listForUser({
+      username: actionData.owner
+    });
 
     // debugLog(`org ${JSON.stringify(orgProjects)}`);
-    debugLog(`org ${JSON.stringify(repoProjects)}`);
-    // debugLog(`org ${JSON.stringify(userProjects)}`);
+    debugLog(`repo ${JSON.stringify(repoProjects)}`);
+    debugLog(`user ${JSON.stringify(userProjects)}`);
   } catch (error) {
     debugLog(`[Error/project.ts] ${error}`);
     throw error;

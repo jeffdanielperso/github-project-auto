@@ -112,12 +112,12 @@ function runProjectAction(octokit, actionData) {
                 owner: actionData.owner,
                 repo: actionData.repo
             });
-            // const userProjects = await octokit.rest.projects.listForUser({
-            //   username: actionData.owner
-            // });
+            const userProjects = yield octokit.rest.projects.listForUser({
+                username: actionData.owner
+            });
             // debugLog(`org ${JSON.stringify(orgProjects)}`);
-            debug_1.debugLog(`org ${JSON.stringify(repoProjects)}`);
-            // debugLog(`org ${JSON.stringify(userProjects)}`);
+            debug_1.debugLog(`repo ${JSON.stringify(repoProjects)}`);
+            debug_1.debugLog(`user ${JSON.stringify(userProjects)}`);
         }
         catch (error) {
             debug_1.debugLog(`[Error/project.ts] ${error}`);
