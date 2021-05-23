@@ -12,9 +12,6 @@ inputs:
   remove-labels:
     description: 'Labels to be removed from an issue, seperated by commas.'
     required: false
-outputs:
-  test-output:
-    description: 'I see you'
 runs:
   using: 'node12'
   main: 'dist/index.js'
