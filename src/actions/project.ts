@@ -15,7 +15,7 @@ export async function runProjectAction(
 
     // Get projects
     const orgProjects = await octokit.rest.projects.listForOrg({
-      org: actionData.owner
+      org: 'org'
     });
     const repoProjects = await octokit.rest.projects.listForRepo({
       owner: actionData.owner,
