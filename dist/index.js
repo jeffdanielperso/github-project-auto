@@ -1,59 +1,39 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 928:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ 999:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getIssueNumber = exports.getOwnerName = exports.getRepositoryName = void 0;
-const github = __importStar(__nccwpck_require__(438));
-function getRepositoryName() {
-    return github.context.repo.repo;
-}
-exports.getRepositoryName = getRepositoryName;
-function getOwnerName() {
-    return github.context.repo.owner;
-}
-exports.getOwnerName = getOwnerName;
-function getIssueNumber() {
-    const payload = github.context.payload;
-    // Action coming from issues
-    if (payload.issue) {
-        return payload.issue.number;
-    }
-    else if (payload.pull_request) {
-        return payload.pull_request.number;
-    }
-    else if (payload.project_card !== undefined &&
-        payload.project_card.content_url) {
-        return payload.project_card.content_url.split('/').pop();
+exports.setupLabelAction = void 0;
+const input_1 = __nccwpck_require__(525);
+function setupLabelAction(
+// prettier-ignore
+issue) {
+    const labelsToAdd = input_1.getLabels(input_1.GithubProjectAutoInput.addLabels);
+    const labelsToRemove = input_1.getLabels(input_1.GithubProjectAutoInput.removeLabels);
+    if (labelsToRemove.length !== 0 || labelsToAdd.length !== 0) {
+        let labels = issue.data.labels.map(label => label.name);
+        for (const label of labelsToAdd) {
+            if (!labels.includes(labels)) {
+                labels.push(label);
+            }
+        }
+        labels = labels.filter(value => !labelsToRemove.includes(value));
+        return {
+            hasChanges: true,
+            labels
+        };
     }
     else {
-        throw new Error('Could not determinate related issue.');
+        return {
+            hasChanges: false
+        };
     }
 }
-exports.getIssueNumber = getIssueNumber;
+exports.setupLabelAction = setupLabelAction;
 
 
 /***/ }),
@@ -93,30 +73,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const github = __importStar(__nccwpck_require__(438));
-const input_1 = __nccwpck_require__(657);
-const github_1 = __nccwpck_require__(928);
-function debugLog(value) {
-    console.log(value);
-}
-function debugLogs() {
-    debugLog(`Action ${github.context.action}`);
-    debugLog(`Actor ${github.context.actor}`);
-    debugLog(`ApiUrl ${github.context.apiUrl}`);
-    debugLog(`EventName ${github.context.eventName}`);
-    debugLog(`Repo ${JSON.stringify(github.context.repo)}`);
-    debugLog(`Payload.Action ${github.context.payload.action}`);
-    debugLog(`Payload.Comment ${github.context.payload.comment}`);
-    debugLog(`Payload.Issue ${github.context.payload.issue}`);
-    debugLog(`Payload.PullRequest ${github.context.payload.pull_request}`);
-    // debugLog(
-    //   `Payload.Sender ${JSON.stringify(github.context.payload.sender)}`
-    // );
-    // debugLog(
-    //   `Payload.Repository ${JSON.stringify(github.context.payload.repository)}`
-    // );
-    debugLog(`Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card)}`);
-}
+const input_1 = __nccwpck_require__(525);
+const github_1 = __nccwpck_require__(521);
+const labels_1 = __nccwpck_require__(999);
+//import { debugLogs } from './debug/debug';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -126,32 +86,26 @@ function run() {
             const issueNumber = github_1.getIssueNumber();
             const repoToken = input_1.getRepoToken();
             // Uncomment for debug logs
-            debugLogs();
+            //debugLogs();
             // Getting octokit
-            const octokit = github.getOctokit(repoToken);
+            const octokit = github_1.getOctokit(repoToken);
             // Getting last version of Issue
             const issue = yield octokit.rest.issues.get({
                 owner: ownerName,
                 repo: repoName,
                 issue_number: issueNumber
             });
-            // Label management
-            const addLabels = input_1.getLabels(input_1.GithubProjectAutoInput.addLabels);
-            const removeLabels = input_1.getLabels(input_1.GithubProjectAutoInput.removeLabels);
-            let labels = issue.data.labels.map(label => label.name);
-            for (const label of addLabels) {
-                if (!labels.includes(labels)) {
-                    labels.push(label);
-                }
-            }
-            labels = labels.filter(value => !removeLabels.includes(value));
+            // Get Label action setup
+            const labelActionSetup = labels_1.setupLabelAction(issue);
             // updating issue
-            yield octokit.rest.issues.update({
-                owner: ownerName,
-                repo: repoName,
-                issue_number: issueNumber,
-                labels
-            });
+            if (labelActionSetup.hasChanges) {
+                yield octokit.rest.issues.update({
+                    owner: ownerName,
+                    repo: repoName,
+                    issue_number: issueNumber,
+                    labels: labelActionSetup.labels
+                });
+            }
         }
         catch (error) {
             core.setFailed(error.message);
@@ -163,7 +117,68 @@ run();
 
 /***/ }),
 
-/***/ 657:
+/***/ 521:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getOctokit = exports.getIssueNumber = exports.getOwnerName = exports.getRepositoryName = void 0;
+const github = __importStar(__nccwpck_require__(438));
+function getRepositoryName() {
+    return github.context.repo.repo;
+}
+exports.getRepositoryName = getRepositoryName;
+function getOwnerName() {
+    return github.context.repo.owner;
+}
+exports.getOwnerName = getOwnerName;
+function getIssueNumber() {
+    const payload = github.context.payload;
+    // Action coming from issues
+    if (payload.issue) {
+        return payload.issue.number;
+    }
+    else if (payload.pull_request) {
+        return payload.pull_request.number;
+    }
+    else if (payload.project_card !== undefined &&
+        payload.project_card.content_url) {
+        return payload.project_card.content_url.split('/').pop();
+    }
+    else {
+        throw new Error('Could not determinate related issue.');
+    }
+}
+exports.getIssueNumber = getIssueNumber;
+function getOctokit(repoToken) {
+    return github.getOctokit(repoToken);
+}
+exports.getOctokit = getOctokit;
+
+
+/***/ }),
+
+/***/ 525:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";

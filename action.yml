@@ -12,6 +12,12 @@ inputs:
   remove-labels:
     description: 'Labels to be removed from an issue, seperated by commas.'
     required: false
+  project:
+    description: 'The name of the GitHub Project'
+    required: false
+  column:
+    description: 'The name of the column to move the issue or pull request to'
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -1,4 +1,5 @@
 import * as github from '@actions/github';
+import {GitHub} from '@actions/github/lib/utils';
 
 export function getRepositoryName(): string {
   return github.context.repo.repo;
@@ -24,4 +25,8 @@ export function getIssueNumber(): number {
   } else {
     throw new Error('Could not determinate related issue.');
   }
+}
+
+export function getOctokit(repoToken: string): InstanceType<typeof GitHub> {
+  return github.getOctokit(repoToken);
 }
