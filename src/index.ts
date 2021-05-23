@@ -19,14 +19,14 @@ async function run(): Promise<void> {
     debugAction(`Actor ${github.context.actor}`);
     debugAction(`ApiUrl ${github.context.apiUrl}`);
     debugAction(`EventName ${github.context.eventName}`);
-    debugAction(`Repo ${github.context.repo}`);
+    debugAction(`Repo ${JSON.stringify(github.context.repo)}`);
     debugAction(`Payload.Action ${github.context.payload.action}`);
     debugAction(`Payload.Comment ${github.context.payload.comment}`);
     debugAction(`Payload.Issue ${github.context.payload.issue}`);
     debugAction(`Payload.PullRequest ${github.context.payload.pull_request}`);
-    debugAction(`Payload.Sender ${github.context.payload.sender}`);
-    debugAction(`Payload.Repository ${github.context.payload.repository}`);
-
+    debugAction(`Payload.Sender ${JSON.stringify(github.context.payload.sender)}`);
+    debugAction(`Payload.Repository ${JSON.stringify(github.context.payload.repository)}`);
+    debugAction(`Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card)}`);
     // Getting octokit
     const octokit = github.getOctokit(repoToken);
 
