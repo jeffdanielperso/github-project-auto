@@ -148,12 +148,23 @@ function runProjectAction(octokit, actionData) {
             if (!projectName || !columnName)
                 return;
             // Get projects
+            const projects = [];
             const orgProjects = yield getOrgProjects(octokit, actionData.owner);
+            for (const project of orgProjects) {
+                projects.push(project);
+            }
             const repoProjects = yield getRepoProjects(octokit, actionData.owner, actionData.repo);
+            for (const project of repoProjects) {
+                projects.push(project);
+            }
             const userProjects = yield getUserProjects(octokit, actionData.owner);
-            debug_1.debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
-            debug_1.debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
-            debug_1.debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
+            for (const project of userProjects) {
+                projects.push(project);
+            }
+            // debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
+            // debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
+            // debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
+            debug_1.debugLog(`global: ${JSON.stringify(projects, null, '\t')}`);
         }
         catch (error) {
             debug_1.debugLog(`[Error/project.ts] ${error}`);

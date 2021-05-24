@@ -3,7 +3,6 @@ import {GitHub} from '@actions/github/lib/utils';
 import {debugLog} from '../debug/debug';
 import * as core from '@actions/core';
 import {Endpoints} from '@octokit/types';
-import { InvalidatedProjectKind } from 'typescript';
 
 // prettier-ignore
 type TypeOrgResponse = Endpoints["GET /orgs/{org}/projects"]["response"]["data"];
@@ -71,19 +70,25 @@ export async function runProjectAction(
     if (!projectName || !columnName) return;
 
     // Get projects
-    let projects = [] as TypeProjectList;
+    const projects = [] as TypeProjectList;
     const orgProjects = await getOrgProjects(octokit, actionData.owner);
-    orgProjects.forEach(project => projects.push(project));
+    for (const project of orgProjects) {
+      projects.push(project);
+    }
 
     const repoProjects = await getRepoProjects(
       octokit,
       actionData.owner,
       actionData.repo
     );
-    repoProjects.forEach(project => projects.push(project));
-    
+    for (const project of repoProjects) {
+      projects.push(project);
+    }
+
     const userProjects = await getUserProjects(octokit, actionData.owner);
-    userProjects.forEach(project => projects.push(project));
+    for (const project of userProjects) {
+      projects.push(project);
+    }
 
     // debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
     // debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
