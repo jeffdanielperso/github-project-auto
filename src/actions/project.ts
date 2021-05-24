@@ -121,7 +121,7 @@ async function tryAndRunOnProject(
     issue_number: actionData.issueNumber as number
   });
 
-  debugLog(`Issue ${issue.data}`);
+  debugLog(`Issue ${JSON.stringify(issue.data, null, '\t')}`);
 
   const matchingColumn = columns.data.find(
     column => column.name === columnName
