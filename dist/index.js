@@ -97,6 +97,49 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.runProjectAction = void 0;
 const debug_1 = __nccwpck_require__(371);
 const core = __importStar(__nccwpck_require__(186));
+// async function getOrgProjects(
+//   octokit: InstanceType<typeof GitHub>,
+//   org: string
+// ): Promise<TypeOrgResponse> {
+//   try {
+//     const orgProjects = await octokit.rest.projects.listForOrg({
+//       org
+//     });
+//     return orgProjects;
+//   } catch (error) {
+//     debugLog(`[Error/project.ts/getOrgProjects] ${error}`);
+//     return {data: {}} as TypeOrgResponse;
+//   }
+// }
+function getRepoProjects(octokit, owner, repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const repoProjects = yield octokit.rest.projects.listForRepo({
+                owner,
+                repo
+            });
+            return repoProjects;
+        }
+        catch (error) {
+            debug_1.debugLog(`[Error/project.ts/getRepoProjects] ${error}`);
+            return { data: {} };
+        }
+    });
+}
+function getUserProjects(octokit, username) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const userProjects = yield octokit.rest.projects.listForUser({
+                username
+            });
+            return userProjects;
+        }
+        catch (error) {
+            debug_1.debugLog(`[Error/project.ts/getUserProjects] ${error}`);
+            return { data: {} };
+        }
+    });
+}
 function runProjectAction(octokit, actionData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -105,16 +148,8 @@ function runProjectAction(octokit, actionData) {
             if (!projectName || !columnName)
                 return;
             // Get projects
-            // const orgProjects = await octokit.rest.projects.listForOrg({
-            //   org: actionData.owner
-            // });
-            const repoProjects = yield octokit.rest.projects.listForRepo({
-                owner: actionData.owner,
-                repo: actionData.repo
-            });
-            const userProjects = yield octokit.rest.projects.listForUser({
-                username: actionData.owner
-            });
+            const repoProjects = yield getRepoProjects(octokit, actionData.owner, actionData.repo);
+            const userProjects = yield getUserProjects(octokit, actionData.owner);
             ///debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
             debug_1.debugLog(`repo ${JSON.stringify(repoProjects, null, '\t')}`);
             debug_1.debugLog(`user ${JSON.stringify(userProjects, null, '\t')}`);
