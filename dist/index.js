@@ -183,7 +183,7 @@ function tryAndRunOnProject(octokit, project, columnName, actionData) {
             repo: actionData.repo,
             issue_number: actionData.issueNumber
         });
-        debug_1.debugLog(`Issue ${issue.data}`);
+        debug_1.debugLog(`Issue2 ${JSON.stringify(issue.data, null, '\t')}`);
         const matchingColumn = columns.data.find(column => column.name === columnName);
         if (matchingColumn) {
             debug_1.debugLog(`Found matching project ${actionData.issueNumber} '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`);
