@@ -140,6 +140,28 @@ function getUserProjects(octokit, username) {
         }
     });
 }
+function getProjects(octokit, actionData) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const projects = [];
+        const orgProjects = yield getOrgProjects(octokit, actionData.owner);
+        for (const project of orgProjects) {
+            projects.push(project);
+        }
+        const repoProjects = yield getRepoProjects(octokit, actionData.owner, actionData.repo);
+        for (const project of repoProjects) {
+            projects.push(project);
+        }
+        const userProjects = yield getUserProjects(octokit, actionData.owner);
+        for (const project of userProjects) {
+            projects.push(project);
+        }
+        // debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
+        // debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
+        // debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
+        // debugLog(`global: ${JSON.stringify(projects, null, '\t')}`);
+        return projects;
+    });
+}
 function runProjectAction(octokit, actionData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -148,23 +170,10 @@ function runProjectAction(octokit, actionData) {
             if (!projectName || !columnName)
                 return;
             // Get projects
-            const projects = [];
-            const orgProjects = yield getOrgProjects(octokit, actionData.owner);
-            for (const project of orgProjects) {
-                projects.push(project);
-            }
-            const repoProjects = yield getRepoProjects(octokit, actionData.owner, actionData.repo);
-            for (const project of repoProjects) {
-                projects.push(project);
-            }
-            const userProjects = yield getUserProjects(octokit, actionData.owner);
-            for (const project of userProjects) {
-                projects.push(project);
-            }
-            // debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
-            // debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
-            // debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
-            debug_1.debugLog(`global: ${JSON.stringify(projects, null, '\t')}`);
+            const projects = yield getProjects(octokit, actionData);
+            // Get matching projects
+            const matchingProjects = projects.filter(p => p.name === projectName);
+            debug_1.debugLog(`matching: ${JSON.stringify(matchingProjects, null, '\t')}`);
         }
         catch (error) {
             debug_1.debugLog(`[Error/project.ts] ${error}`);

@@ -59,6 +59,39 @@ async function getUserProjects(
   }
 }
 
+async function getProjects(
+  octokit: InstanceType<typeof GitHub>,
+  actionData: GithubActionData
+): Promise<TypeProjectList> {
+  const projects = [] as TypeProjectList;
+
+  const orgProjects = await getOrgProjects(octokit, actionData.owner);
+  for (const project of orgProjects) {
+    projects.push(project);
+  }
+
+  const repoProjects = await getRepoProjects(
+    octokit,
+    actionData.owner,
+    actionData.repo
+  );
+  for (const project of repoProjects) {
+    projects.push(project);
+  }
+
+  const userProjects = await getUserProjects(octokit, actionData.owner);
+  for (const project of userProjects) {
+    projects.push(project);
+  }
+
+  // debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
+  // debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
+  // debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
+  // debugLog(`global: ${JSON.stringify(projects, null, '\t')}`);
+
+  return projects;
+}
+
 export async function runProjectAction(
   octokit: InstanceType<typeof GitHub>,
   actionData: GithubActionData
@@ -70,30 +103,12 @@ export async function runProjectAction(
     if (!projectName || !columnName) return;
 
     // Get projects
-    const projects = [] as TypeProjectList;
-    const orgProjects = await getOrgProjects(octokit, actionData.owner);
-    for (const project of orgProjects) {
-      projects.push(project);
-    }
+    const projects = await getProjects(octokit, actionData);
 
-    const repoProjects = await getRepoProjects(
-      octokit,
-      actionData.owner,
-      actionData.repo
-    );
-    for (const project of repoProjects) {
-      projects.push(project);
-    }
+    // Get matching projects
+    const matchingProjects = projects.filter(p => p.name === projectName);
 
-    const userProjects = await getUserProjects(octokit, actionData.owner);
-    for (const project of userProjects) {
-      projects.push(project);
-    }
-
-    // debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
-    // debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
-    // debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
-    debugLog(`global: ${JSON.stringify(projects, null, '\t')}`);
+    debugLog(`matching: ${JSON.stringify(matchingProjects, null, '\t')}`);
   } catch (error) {
     debugLog(`[Error/project.ts] ${error}`);
   }
