@@ -105,9 +105,9 @@ function runProjectAction(octokit, actionData) {
             if (!projectName || !columnName)
                 return;
             // Get projects
-            // const orgProjects = await octokit.rest.projects.listForOrg({
-            //   org: 'org'
-            // });
+            const orgProjects = yield octokit.rest.projects.listForOrg({
+                org: actionData.owner
+            });
             const repoProjects = yield octokit.rest.projects.listForRepo({
                 owner: actionData.owner,
                 repo: actionData.repo
@@ -115,7 +115,7 @@ function runProjectAction(octokit, actionData) {
             // const userProjects = await octokit.rest.projects.listForUser({
             //   username: actionData.owner
             // });
-            //debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
+            debug_1.debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
             debug_1.debugLog(`repo ${JSON.stringify(repoProjects, null, '\t')}`);
             // debugLog(`user ${JSON.stringify(userProjects)}`);
         }
