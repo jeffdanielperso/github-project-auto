@@ -222,7 +222,7 @@ const input_1 = __nccwpck_require__(525);
 const github_1 = __nccwpck_require__(521);
 const labels_1 = __nccwpck_require__(999);
 const project_1 = __nccwpck_require__(950);
-const debug_1 = __nccwpck_require__(371);
+//import {debugLogs} from './debug/debug';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -233,7 +233,7 @@ function run() {
                 throw new Error('Error: Could not determinate Issue.');
             }
             // Uncomment for debug logs
-            debug_1.debugLogs();
+            //debugLogs();
             // Getting octokit
             const octokit = github_1.getOctokit(repoToken);
             // Run actions
