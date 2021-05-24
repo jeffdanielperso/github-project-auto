@@ -207,7 +207,7 @@ function createCard(octokit, column, issue) {
         try {
             const request = {
                 column_id: column.id,
-                note: `note ${column.id} - ${issue.number} - ${issue.id}`
+                note: issue.title //`note ${column.id} - ${issue.number} - ${issue.id}`
             };
             debug_1.debugLog(`Create ${JSON.stringify(request, null, '\t')}`);
             const test = yield octokit.rest.projects.createCard(request);
