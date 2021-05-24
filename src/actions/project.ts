@@ -77,9 +77,9 @@ export async function runProjectAction(
     );
     const userProjects = await getUserProjects(octokit, actionData.owner);
 
-    debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
-    debugLog(`repo ${JSON.stringify(repoProjects, null, '\t')}`);
-    debugLog(`user ${JSON.stringify(userProjects, null, '\t')}`);
+    debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
+    debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
+    debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
   } catch (error) {
     debugLog(`[Error/project.ts] ${error}`);
   }
