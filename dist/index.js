@@ -162,6 +162,19 @@ function getProjects(octokit, actionData) {
         return projects;
     });
 }
+function tryAndRunOnProject(octokit, project, // eslint-disable-line @typescript-eslint/no-explicit-any
+columnName, actionData // eslint-disable-line @typescript-eslint/no-unused-vars
+) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const columns = yield octokit.rest.projects.listColumns({
+            project_id: project.id
+        });
+        const matchingColumn = columns.data.find(column => column.name === columnName);
+        if (matchingColumn) {
+            debug_1.debugLog(`Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.url}`);
+        }
+    });
+}
 function runProjectAction(octokit, actionData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -173,7 +186,10 @@ function runProjectAction(octokit, actionData) {
             const projects = yield getProjects(octokit, actionData);
             // Get matching projects
             const matchingProjects = projects.filter(p => p.name === projectName);
-            debug_1.debugLog(`matching: ${JSON.stringify(matchingProjects, null, '\t')}`);
+            // Try & Run action on matching projects
+            for (const project of matchingProjects) {
+                tryAndRunOnProject(octokit, project, columnName, actionData);
+            }
         }
         catch (error) {
             debug_1.debugLog(`[Error/project.ts] ${error}`);

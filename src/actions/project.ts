@@ -92,6 +92,27 @@ async function getProjects(
   return projects;
 }
 
+async function tryAndRunOnProject(
+  octokit: InstanceType<typeof GitHub>,
+  project: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  columnName: string,
+  actionData: GithubActionData // eslint-disable-line @typescript-eslint/no-unused-vars
+): Promise<void> {
+  const columns = await octokit.rest.projects.listColumns({
+    project_id: project.id
+  });
+
+  const matchingColumn = columns.data.find(
+    column => column.name === columnName
+  );
+
+  if (matchingColumn) {
+    debugLog(
+      `Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.url}`
+    );
+  }
+}
+
 export async function runProjectAction(
   octokit: InstanceType<typeof GitHub>,
   actionData: GithubActionData
@@ -108,7 +129,10 @@ export async function runProjectAction(
     // Get matching projects
     const matchingProjects = projects.filter(p => p.name === projectName);
 
-    debugLog(`matching: ${JSON.stringify(matchingProjects, null, '\t')}`);
+    // Try & Run action on matching projects
+    for (const project of matchingProjects) {
+      tryAndRunOnProject(octokit, project, columnName, actionData);
+    }
   } catch (error) {
     debugLog(`[Error/project.ts] ${error}`);
   }
