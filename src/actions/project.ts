@@ -127,7 +127,7 @@ async function createCard(
       content_type: 'Issue',
       note: `note ${column.id} - ${issue.number} - ${issue.id}`
     };
-    debugLog(`Create ${JSON.stringify(request, null, '\t')}`);
+    // debugLog(`Create ${JSON.stringify(request, null, '\t')}`);
     const test = await octokit.rest.projects.createCard(request);
     return test;
   } catch (error) {
