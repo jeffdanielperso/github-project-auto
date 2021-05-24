@@ -8,7 +8,9 @@ import {
   Projects,
   OrgProjects,
   RepoProjects,
-  UserProjects
+  UserProjects,
+  Issue,
+  Card
 } from '../octokit/types';
 
 async function getOrgProjects(
@@ -90,38 +92,38 @@ async function getProjects(
   return projects;
 }
 
-async function getCardsOfProject(
+async function findMatchingCard(
   octokit: Octokit,
-  columns: Columns
-): Promise<void> {
+  columns: Columns,
+  issue: Issue
+): Promise<Card | null> {
   for (const column of columns) {
     const colCards = await octokit.rest.projects.listCards({
       column_id: column.id
     });
 
-    debugLog(`TEESST: ${JSON.stringify(colCards, null, '\t')}`);
+    const matchingCard = colCards.data.find(
+      card => card.content_url === issue.url
+    );
+    if (matchingCard) {
+      debugLog(`MatchingCard ${JSON.stringify(matchingCard, null, '\t')}`);
+      return matchingCard;
+    }
   }
-
-  return;
+  return null;
 }
 
 async function tryAndRunOnProject(
   octokit: Octokit,
   project: Project,
   columnName: string,
-  actionData: GithubActionData
+  issue: Issue
 ): Promise<void> {
   const columns = await octokit.rest.projects.listColumns({
     project_id: project.id
   });
 
-  const issue = await octokit.rest.issues.get({
-    owner: actionData.owner,
-    repo: actionData.repo,
-    issue_number: actionData.issueNumber as number
-  });
-
-  debugLog(`Issue2 ${JSON.stringify(issue.data, null, '\t')}`);
+  debugLog(`Issue ${JSON.stringify(issue, null, '\t')}`);
 
   const matchingColumn = columns.data.find(
     column => column.name === columnName
@@ -129,16 +131,22 @@ async function tryAndRunOnProject(
 
   if (matchingColumn) {
     debugLog(
-      `Found matching project ${actionData.issueNumber} '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`
+      `Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`
     );
 
-    await getCardsOfProject(octokit, columns.data);
+    const matchingCard = await findMatchingCard(octokit, columns.data, issue);
+    if (matchingCard) {
+      debugLog(`Card existing in project`);
+    } else {
+      debugLog(`Card not existing`);
+    }
   }
 }
 
 export async function runProjectAction(
   octokit: Octokit,
-  actionData: GithubActionData
+  actionData: GithubActionData,
+  issue: Issue
 ): Promise<void> {
   try {
     const projectName = core.getInput('project');
@@ -154,7 +162,7 @@ export async function runProjectAction(
 
     // Try & Run action on matching projects
     for (const project of matchingProjects) {
-      tryAndRunOnProject(octokit, project, columnName, actionData);
+      tryAndRunOnProject(octokit, project, columnName, issue);
     }
   } catch (error) {
     debugLog(`[Error/project.ts] ${error}`);
