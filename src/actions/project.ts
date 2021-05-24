@@ -109,7 +109,7 @@ async function tryAndRunOnProject(
   octokit: Octokit,
   project: Project,
   columnName: string,
-  actionData: GithubActionData // eslint-disable-line @typescript-eslint/no-unused-vars
+  actionData: GithubActionData
 ): Promise<void> {
   const columns = await octokit.rest.projects.listColumns({
     project_id: project.id
@@ -121,7 +121,7 @@ async function tryAndRunOnProject(
 
   if (matchingColumn) {
     debugLog(
-      `Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`
+      `Found matching project ${actionData.issueNumber} '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`
     );
 
     await getCardsOfProject(octokit, columns.data);

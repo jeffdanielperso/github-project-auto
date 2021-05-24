@@ -173,15 +173,14 @@ function getCardsOfProject(octokit, columns) {
         return;
     });
 }
-function tryAndRunOnProject(octokit, project, columnName, actionData // eslint-disable-line @typescript-eslint/no-unused-vars
-) {
+function tryAndRunOnProject(octokit, project, columnName, actionData) {
     return __awaiter(this, void 0, void 0, function* () {
         const columns = yield octokit.rest.projects.listColumns({
             project_id: project.id
         });
         const matchingColumn = columns.data.find(column => column.name === columnName);
         if (matchingColumn) {
-            debug_1.debugLog(`Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`);
+            debug_1.debugLog(`Found matching project ${actionData.issueNumber} '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`);
             yield getCardsOfProject(octokit, columns.data);
         }
     });
