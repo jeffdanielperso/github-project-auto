@@ -4,6 +4,7 @@ import * as core from '@actions/core';
 import {
   Octokit,
   Columns,
+  Column,
   Project,
   Projects,
   OrgProjects,
@@ -106,11 +107,28 @@ async function findMatchingCard(
       card => card.content_url === issue.url
     );
     if (matchingCard) {
-      debugLog(`MatchingCard ${JSON.stringify(matchingCard, null, '\t')}`);
+      //debugLog(`MatchingCard ${JSON.stringify(matchingCard, null, '\t')}`);
       return matchingCard;
     }
   }
   return null;
+}
+
+async function createCard(
+  octokit: Octokit,
+  column: Column,
+  issue: Issue
+): Promise<void> {
+  try {
+    await octokit.rest.projects.createCard({
+      column_id: column.id,
+      content_id: issue.number,
+      content_type: 'Issue',
+      note: issue.title
+    });
+  } catch (error) {
+    debugLog(`[ERROR/project.ts/createCard] ${error}`);
+  }
 }
 
 async function tryAndRunOnProject(
@@ -123,7 +141,7 @@ async function tryAndRunOnProject(
     project_id: project.id
   });
 
-  debugLog(`Issue ${JSON.stringify(issue, null, '\t')}`);
+  //debugLog(`Issue ${JSON.stringify(issue, null, '\t')}`);
 
   const matchingColumn = columns.data.find(
     column => column.name === columnName
@@ -138,7 +156,7 @@ async function tryAndRunOnProject(
     if (matchingCard) {
       debugLog(`Card existing in project`);
     } else {
-      debugLog(`Card not existing`);
+      await createCard(octokit, matchingColumn, issue);
     }
   }
 }

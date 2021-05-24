@@ -195,11 +195,26 @@ function findMatchingCard(octokit, columns, issue) {
             });
             const matchingCard = colCards.data.find(card => card.content_url === issue.url);
             if (matchingCard) {
-                debug_1.debugLog(`MatchingCard ${JSON.stringify(matchingCard, null, '\t')}`);
+                //debugLog(`MatchingCard ${JSON.stringify(matchingCard, null, '\t')}`);
                 return matchingCard;
             }
         }
         return null;
+    });
+}
+function createCard(octokit, column, issue) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield octokit.rest.projects.createCard({
+                column_id: column.id,
+                content_id: issue.number,
+                content_type: 'Issue',
+                note: issue.title
+            });
+        }
+        catch (error) {
+            debug_1.debugLog(`[ERROR/project.ts/createCard] ${error}`);
+        }
     });
 }
 function tryAndRunOnProject(octokit, project, columnName, issue) {
@@ -207,7 +222,7 @@ function tryAndRunOnProject(octokit, project, columnName, issue) {
         const columns = yield octokit.rest.projects.listColumns({
             project_id: project.id
         });
-        debug_1.debugLog(`Issue ${JSON.stringify(issue, null, '\t')}`);
+        //debugLog(`Issue ${JSON.stringify(issue, null, '\t')}`);
         const matchingColumn = columns.data.find(column => column.name === columnName);
         if (matchingColumn) {
             debug_1.debugLog(`Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`);
@@ -216,7 +231,7 @@ function tryAndRunOnProject(octokit, project, columnName, issue) {
                 debug_1.debugLog(`Card existing in project`);
             }
             else {
-                debug_1.debugLog(`Card not existing`);
+                yield createCard(octokit, matchingColumn, issue);
             }
         }
     });
