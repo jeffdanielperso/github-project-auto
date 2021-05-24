@@ -17,3 +17,4 @@ jobs:
         with:
           project: "Orga Board"
           column: "In progress"
+          repo-token: ${{ secrets.GHA_JEFF }}
