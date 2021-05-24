@@ -11,7 +11,8 @@ import {
   RepoProjects,
   UserProjects,
   Issue,
-  Card
+  Card,
+  CreatedCard
 } from '../octokit/types';
 
 async function getOrgProjects(
@@ -118,7 +119,7 @@ async function createCard(
   octokit: Octokit,
   column: Column,
   issue: Issue
-): Promise<void> {
+): Promise<CreatedCard | null> {
   try {
     const request = {
       column_id: column.id,
@@ -127,12 +128,19 @@ async function createCard(
       note: issue.title
     };
     debugLog(`Create ${JSON.stringify(request, null, '\t')}`);
-    await octokit.rest.projects.createCard(request);
+    const test = await octokit.rest.projects.createCard({
+      column_id: column.id,
+      content_id: issue.number,
+      content_type: 'Issue',
+      note: issue.title
+    });
+    return test;
   } catch (error) {
     debugLog(
       `[ERROR/project.ts/createCard] ${JSON.stringify(error, null, '\t')}`
     );
   }
+  return null;
 }
 
 async function tryAndRunOnProject(
@@ -160,7 +168,8 @@ async function tryAndRunOnProject(
     if (matchingCard) {
       debugLog(`Card existing in project`);
     } else {
-      await createCard(octokit, matchingColumn, issue);
+      const test = await createCard(octokit, matchingColumn, issue);
+      debugLog(`TestResult ${JSON.stringify(test, null, '\t')}`);
     }
   }
 }

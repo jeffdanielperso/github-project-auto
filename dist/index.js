@@ -212,11 +212,18 @@ function createCard(octokit, column, issue) {
                 note: issue.title
             };
             debug_1.debugLog(`Create ${JSON.stringify(request, null, '\t')}`);
-            yield octokit.rest.projects.createCard(request);
+            const test = yield octokit.rest.projects.createCard({
+                column_id: column.id,
+                content_id: issue.number,
+                content_type: 'Issue',
+                note: issue.title
+            });
+            return test;
         }
         catch (error) {
             debug_1.debugLog(`[ERROR/project.ts/createCard] ${JSON.stringify(error, null, '\t')}`);
         }
+        return null;
     });
 }
 function tryAndRunOnProject(octokit, project, columnName, issue) {
@@ -233,7 +240,8 @@ function tryAndRunOnProject(octokit, project, columnName, issue) {
                 debug_1.debugLog(`Card existing in project`);
             }
             else {
-                yield createCard(octokit, matchingColumn, issue);
+                const test = yield createCard(octokit, matchingColumn, issue);
+                debug_1.debugLog(`TestResult ${JSON.stringify(test, null, '\t')}`);
             }
         }
     });

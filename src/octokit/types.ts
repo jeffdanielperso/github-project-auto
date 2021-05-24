@@ -19,5 +19,7 @@ export type Cards =
   Endpoints['GET /projects/columns/{column_id}/cards']['response']['data'];
 export type Card =
   Endpoints['GET /projects/columns/cards/{card_id}']['response']['data'];
+export type CreatedCard =
+  Endpoints['POST /projects/columns/{column_id}/cards']['response'];
 export type Issue =
   Endpoints['GET /repos/{owner}/{repo}/issues/{issue_number}']['response']['data'];
