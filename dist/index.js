@@ -115,12 +115,12 @@ function runProjectAction(octokit, actionData) {
             // const userProjects = await octokit.rest.projects.listForUser({
             //   username: actionData.owner
             // });
-            debug_1.debugLog(`org ${JSON.stringify(orgProjects)}`);
-            debug_1.debugLog(`repo ${JSON.stringify(repoProjects)}`);
+            debug_1.debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
+            debug_1.debugLog(`repo ${JSON.stringify(repoProjects, null, '\t')}`);
             // debugLog(`user ${JSON.stringify(userProjects)}`);
         }
         catch (error) {
-            debug_1.debugLog(`[Error/project.ts] ${error}`);
+            debug_1.debugLog(`[Error/project.ts] ${JSON.stringify(error, null, '\t')}`);
             throw error;
         }
     });
@@ -157,8 +157,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.debugLogs = exports.debugLog = void 0;
 const github = __importStar(__nccwpck_require__(438));
+const core = __importStar(__nccwpck_require__(186));
 function debugLog(value) {
     console.log(value);
+    core.debug(value);
 }
 exports.debugLog = debugLog;
 function debugLogs() {
@@ -166,7 +168,7 @@ function debugLogs() {
     debugLog(`Actor ${github.context.actor}`);
     debugLog(`ApiUrl ${github.context.apiUrl}`);
     debugLog(`EventName ${github.context.eventName}`);
-    debugLog(`Repo ${JSON.stringify(github.context.repo)}`);
+    debugLog(`Repo ${JSON.stringify(github.context.repo, null, '\t')}`);
     debugLog(`Payload.Action ${github.context.payload.action}`);
     debugLog(`Payload.Comment ${github.context.payload.comment}`);
     debugLog(`Payload.Issue ${github.context.payload.issue}`);
@@ -177,7 +179,7 @@ function debugLogs() {
     // debugLog(
     //   `Payload.Repository ${JSON.stringify(github.context.payload.repository)}`
     // );
-    debugLog(`Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card)}`);
+    debugLog(`Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card, null, '\t')}`);
 }
 exports.debugLogs = debugLogs;
 

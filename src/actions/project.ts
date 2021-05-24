@@ -25,11 +25,11 @@ export async function runProjectAction(
     //   username: actionData.owner
     // });
 
-    debugLog(`org ${JSON.stringify(orgProjects)}`);
-    debugLog(`repo ${JSON.stringify(repoProjects)}`);
+    debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
+    debugLog(`repo ${JSON.stringify(repoProjects, null, '\t')}`);
     // debugLog(`user ${JSON.stringify(userProjects)}`);
   } catch (error) {
-    debugLog(`[Error/project.ts] ${JSON.stringify(error)}`);
+    debugLog(`[Error/project.ts] ${JSON.stringify(error, null, '\t')}`);
     throw error;
   }
 }
