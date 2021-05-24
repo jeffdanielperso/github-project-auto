@@ -3,6 +3,7 @@ import {GitHub} from '@actions/github/lib/utils';
 import {debugLog} from '../debug/debug';
 import * as core from '@actions/core';
 import {Endpoints} from '@octokit/types';
+import { InvalidatedProjectKind } from 'typescript';
 
 // prettier-ignore
 type TypeOrgResponse = Endpoints["GET /orgs/{org}/projects"]["response"]["data"];
@@ -10,6 +11,7 @@ type TypeOrgResponse = Endpoints["GET /orgs/{org}/projects"]["response"]["data"]
 type TypeRepoResponse = Endpoints["GET /repos/{owner}/{repo}/projects"]["response"]["data"];
 // prettier-ignore
 type TypeUserResponse = Endpoints["GET /users/{username}/projects"]["response"]["data"];
+type TypeProjectList = TypeRepoResponse;
 
 async function getOrgProjects(
   octokit: InstanceType<typeof GitHub>,
@@ -69,17 +71,24 @@ export async function runProjectAction(
     if (!projectName || !columnName) return;
 
     // Get projects
+    let projects = [] as TypeProjectList;
     const orgProjects = await getOrgProjects(octokit, actionData.owner);
+    orgProjects.forEach(project => projects.push(project));
+
     const repoProjects = await getRepoProjects(
       octokit,
       actionData.owner,
       actionData.repo
     );
+    repoProjects.forEach(project => projects.push(project));
+    
     const userProjects = await getUserProjects(octokit, actionData.owner);
+    userProjects.forEach(project => projects.push(project));
 
-    debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
-    debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
-    debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
+    // debugLog(`org: ${JSON.stringify(orgProjects, null, '\t')}`);
+    // debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
+    // debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
+    debugLog(`global: ${JSON.stringify(projects, null, '\t')}`);
   } catch (error) {
     debugLog(`[Error/project.ts] ${error}`);
   }

@@ -4,7 +4,15 @@ on:
     types:
       - moved
 jobs:
-  card-moved:
+  moved-to-others:
+    if: github.event.project_card.column_id == '14432401' || github.event.project_card.column_id == '14432396'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove Label `qa-ready`
+        uses: jeffdanielperso/github-project-auto@latest
+        with:
+          remove-labels: "qa-ready"
+  moved-to-in-progress:
     if: github.event.project_card.column_id == '14432400'
     runs-on: ubuntu-latest
     steps:
