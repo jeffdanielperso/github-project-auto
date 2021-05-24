@@ -115,6 +115,14 @@ async function tryAndRunOnProject(
     project_id: project.id
   });
 
+  const issue = await octokit.rest.issues.get({
+    owner: actionData.owner,
+    repo: actionData.repo,
+    issue_number: actionData.issueNumber as number
+  });
+
+  debugLog(`Issue ${issue.data}`);
+
   const matchingColumn = columns.data.find(
     column => column.name === columnName
   );

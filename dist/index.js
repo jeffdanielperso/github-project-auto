@@ -178,6 +178,12 @@ function tryAndRunOnProject(octokit, project, columnName, actionData) {
         const columns = yield octokit.rest.projects.listColumns({
             project_id: project.id
         });
+        const issue = yield octokit.rest.issues.get({
+            owner: actionData.owner,
+            repo: actionData.repo,
+            issue_number: actionData.issueNumber
+        });
+        debug_1.debugLog(`Issue ${issue.data}`);
         const matchingColumn = columns.data.find(column => column.name === columnName);
         if (matchingColumn) {
             debug_1.debugLog(`Found matching project ${actionData.issueNumber} '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`);
