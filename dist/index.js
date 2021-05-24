@@ -205,9 +205,10 @@ function findMatchingCard(octokit, columns, issue) {
 function createCard(octokit, column, issue) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            const issueNumber = issue.number;
             const request = {
                 column_id: column.id,
-                content_id: issue.number,
+                content_id: issueNumber,
                 content_type: 'Issue',
                 note: `note ${column.id} - ${issue.number} - ${issue.id}`
             };
