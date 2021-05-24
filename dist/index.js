@@ -120,7 +120,7 @@ function runProjectAction(octokit, actionData) {
             // debugLog(`user ${JSON.stringify(userProjects)}`);
         }
         catch (error) {
-            debug_1.debugLog(`[Error/project.ts] ${JSON.stringify(error, null, '\t')}`);
+            debug_1.debugLog(`[Error/project.ts] ${error}`);
             throw error;
         }
     });
@@ -225,6 +225,7 @@ const input_1 = __nccwpck_require__(525);
 const github_1 = __nccwpck_require__(521);
 const labels_1 = __nccwpck_require__(999);
 const project_1 = __nccwpck_require__(950);
+const debug_1 = __nccwpck_require__(371);
 //import { debugLogs } from './debug/debug';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -238,6 +239,7 @@ function run() {
             // Uncomment for debug logs
             //debugLogs();
             // Getting octokit
+            debug_1.debugLog(`repo-token ${repoToken}`);
             const octokit = github_1.getOctokit(repoToken);
             // Run actions
             labels_1.runLabelsAction(octokit, actionData);

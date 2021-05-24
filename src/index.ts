@@ -3,6 +3,7 @@ import {getRepoToken} from './triggers/input';
 import {getOctokit, getGithubActionData} from './triggers/github';
 import {runLabelsAction} from './actions/labels';
 import {runProjectAction} from './actions/project';
+import {debugLog} from './debug/debug';
 //import { debugLogs } from './debug/debug';
 
 async function run(): Promise<void> {
@@ -19,6 +20,7 @@ async function run(): Promise<void> {
     //debugLogs();
 
     // Getting octokit
+    debugLog(`repo-token ${repoToken}`);
     const octokit = getOctokit(repoToken);
 
     // Run actions
