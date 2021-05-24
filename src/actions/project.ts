@@ -7,9 +7,9 @@ import {Endpoints} from '@octokit/types';
 // prettier-ignore
 //type TypeOrgResponse = Endpoints["GET /orgs/{org}/projects"]["response"];
 // prettier-ignore
-type TypeRepoResponse = Endpoints["GET /repos/{owner}/{repo}/projects"]["response"];
+type TypeRepoResponse = Endpoints["GET /repos/{owner}/{repo}/projects"]["response"]["data"];
 // prettier-ignore
-type TypeUserResponse = Endpoints["GET /users/{username}/projects"]["response"];
+type TypeUserResponse = Endpoints["GET /users/{username}/projects"]["response"]["data"];
 
 // async function getOrgProjects(
 //   octokit: InstanceType<typeof GitHub>,
@@ -36,10 +36,10 @@ async function getRepoProjects(
       owner,
       repo
     });
-    return repoProjects;
+    return repoProjects.data;
   } catch (error) {
     debugLog(`[Error/project.ts/getRepoProjects] ${error}`);
-    return {data: {}} as TypeRepoResponse;
+    return [] as TypeRepoResponse;
   }
 }
 
@@ -51,10 +51,10 @@ async function getUserProjects(
     const userProjects = await octokit.rest.projects.listForUser({
       username
     });
-    return userProjects;
+    return userProjects.data;
   } catch (error) {
     debugLog(`[Error/project.ts/getUserProjects] ${error}`);
-    return {data: {}} as TypeUserResponse;
+    return [] as TypeUserResponse;
   }
 }
 

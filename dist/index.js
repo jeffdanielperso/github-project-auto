@@ -118,11 +118,11 @@ function getRepoProjects(octokit, owner, repo) {
                 owner,
                 repo
             });
-            return repoProjects;
+            return repoProjects.data;
         }
         catch (error) {
             debug_1.debugLog(`[Error/project.ts/getRepoProjects] ${error}`);
-            return { data: {} };
+            return [];
         }
     });
 }
@@ -132,11 +132,11 @@ function getUserProjects(octokit, username) {
             const userProjects = yield octokit.rest.projects.listForUser({
                 username
             });
-            return userProjects;
+            return userProjects.data;
         }
         catch (error) {
             debug_1.debugLog(`[Error/project.ts/getUserProjects] ${error}`);
-            return { data: {} };
+            return [];
         }
     });
 }
