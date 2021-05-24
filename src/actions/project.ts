@@ -5,26 +5,26 @@ import * as core from '@actions/core';
 import {Endpoints} from '@octokit/types';
 
 // prettier-ignore
-//type TypeOrgResponse = Endpoints["GET /orgs/{org}/projects"]["response"];
+type TypeOrgResponse = Endpoints["GET /orgs/{org}/projects"]["response"]["data"];
 // prettier-ignore
 type TypeRepoResponse = Endpoints["GET /repos/{owner}/{repo}/projects"]["response"]["data"];
 // prettier-ignore
 type TypeUserResponse = Endpoints["GET /users/{username}/projects"]["response"]["data"];
 
-// async function getOrgProjects(
-//   octokit: InstanceType<typeof GitHub>,
-//   org: string
-// ): Promise<TypeOrgResponse> {
-//   try {
-//     const orgProjects = await octokit.rest.projects.listForOrg({
-//       org
-//     });
-//     return orgProjects;
-//   } catch (error) {
-//     debugLog(`[Error/project.ts/getOrgProjects] ${error}`);
-//     return {data: {}} as TypeOrgResponse;
-//   }
-// }
+async function getOrgProjects(
+  octokit: InstanceType<typeof GitHub>,
+  org: string
+): Promise<TypeOrgResponse> {
+  try {
+    const orgProjects = await octokit.rest.projects.listForOrg({
+      org
+    });
+    return orgProjects.data;
+  } catch (error) {
+    debugLog(`[Error/project.ts/getOrgProjects] ${error}`);
+    return [] as TypeOrgResponse;
+  }
+}
 
 async function getRepoProjects(
   octokit: InstanceType<typeof GitHub>,
@@ -69,6 +69,7 @@ export async function runProjectAction(
     if (!projectName || !columnName) return;
 
     // Get projects
+    const orgProjects = await getOrgProjects(octokit, actionData.owner);
     const repoProjects = await getRepoProjects(
       octokit,
       actionData.owner,
@@ -76,7 +77,7 @@ export async function runProjectAction(
     );
     const userProjects = await getUserProjects(octokit, actionData.owner);
 
-    ///debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
+    debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
     debugLog(`repo ${JSON.stringify(repoProjects, null, '\t')}`);
     debugLog(`user ${JSON.stringify(userProjects, null, '\t')}`);
   } catch (error) {
