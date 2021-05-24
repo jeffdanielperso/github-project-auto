@@ -105,9 +105,9 @@ function runProjectAction(octokit, actionData) {
             if (!projectName || !columnName)
                 return;
             // Get projects
-            const orgProjects = yield octokit.rest.projects.listForOrg({
-                org: 'org'
-            });
+            // const orgProjects = await octokit.rest.projects.listForOrg({
+            //   org: 'org'
+            // });
             const repoProjects = yield octokit.rest.projects.listForRepo({
                 owner: actionData.owner,
                 repo: actionData.repo
@@ -115,13 +115,12 @@ function runProjectAction(octokit, actionData) {
             // const userProjects = await octokit.rest.projects.listForUser({
             //   username: actionData.owner
             // });
-            debug_1.debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
+            //debugLog(`org ${JSON.stringify(orgProjects, null, '\t')}`);
             debug_1.debugLog(`repo ${JSON.stringify(repoProjects, null, '\t')}`);
             // debugLog(`user ${JSON.stringify(userProjects)}`);
         }
         catch (error) {
             debug_1.debugLog(`[Error/project.ts] ${error}`);
-            throw error;
         }
     });
 }
@@ -159,7 +158,6 @@ exports.debugLogs = exports.debugLog = void 0;
 const github = __importStar(__nccwpck_require__(438));
 const core = __importStar(__nccwpck_require__(186));
 function debugLog(value) {
-    console.log(value);
     core.debug(value);
 }
 exports.debugLog = debugLog;
@@ -168,18 +166,17 @@ function debugLogs() {
     debugLog(`Actor ${github.context.actor}`);
     debugLog(`ApiUrl ${github.context.apiUrl}`);
     debugLog(`EventName ${github.context.eventName}`);
+    debugLog(`GraphUrl ${github.context.graphqlUrl}`);
+    debugLog(`Issue ${JSON.stringify(github.context.issue, null, '\t')}`);
+    debugLog(`Job ${github.context.job}`);
     debugLog(`Repo ${JSON.stringify(github.context.repo, null, '\t')}`);
     debugLog(`Payload.Action ${github.context.payload.action}`);
     debugLog(`Payload.Comment ${github.context.payload.comment}`);
     debugLog(`Payload.Issue ${github.context.payload.issue}`);
     debugLog(`Payload.PullRequest ${github.context.payload.pull_request}`);
-    // debugLog(
-    //   `Payload.Sender ${JSON.stringify(github.context.payload.sender)}`
-    // );
-    // debugLog(
-    //   `Payload.Repository ${JSON.stringify(github.context.payload.repository)}`
-    // );
     debugLog(`Payload.ProjectCard ${JSON.stringify(github.context.payload.project_card, null, '\t')}`);
+    debugLog(`Payload ${JSON.stringify(github.context.payload, null, '\t')}`);
+    debugLog(`Workflow ${github.context.workflow}`);
 }
 exports.debugLogs = debugLogs;
 
@@ -226,7 +223,6 @@ const github_1 = __nccwpck_require__(521);
 const labels_1 = __nccwpck_require__(999);
 const project_1 = __nccwpck_require__(950);
 const debug_1 = __nccwpck_require__(371);
-//import { debugLogs } from './debug/debug';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -237,9 +233,8 @@ function run() {
                 throw new Error('Error: Could not determinate Issue.');
             }
             // Uncomment for debug logs
-            //debugLogs();
+            debug_1.debugLogs();
             // Getting octokit
-            debug_1.debugLog(`repo-token ${repoToken}`);
             const octokit = github_1.getOctokit(repoToken);
             // Run actions
             labels_1.runLabelsAction(octokit, actionData);
