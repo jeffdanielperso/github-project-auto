@@ -23,6 +23,6 @@ jobs:
       - name: Project Orga Board
         uses: jeffdanielperso/github-project-auto@latest
         with:
-          project: "Orga Board"
+          project: "My board"
           column: "In progress"
           repo-token: ${{ secrets.GHA_JEFF }}
