@@ -122,12 +122,13 @@ async function createCard(
 ): Promise<CreatedCard | null> {
   try {
     const issueId = issue.id;
-    const issueType = 'type';
+    const issueType = 'Issue';
     const request = {
       column_id: column.id,
-      note: `${issue.title} - ${issueType} - ${issueId}`
+      content_id: issueId,
+      content_type: issueType
     };
-    debugLog(`Create ${JSON.stringify(request, null, '\t')}`);
+    // debugLog(`Create ${JSON.stringify(request, null, '\t')}`);
     const test = await octokit.rest.projects.createCard(request);
     return test;
   } catch (error) {

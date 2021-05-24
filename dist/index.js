@@ -206,12 +206,13 @@ function createCard(octokit, column, issue) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const issueId = issue.id;
-            const issueType = 'type';
+            const issueType = 'Issue';
             const request = {
                 column_id: column.id,
-                note: `${issue.title} - ${issueType} - ${issueId}`
+                content_id: issueId,
+                content_type: issueType
             };
-            debug_1.debugLog(`Create ${JSON.stringify(request, null, '\t')}`);
+            // debugLog(`Create ${JSON.stringify(request, null, '\t')}`);
             const test = yield octokit.rest.projects.createCard(request);
             return test;
         }
