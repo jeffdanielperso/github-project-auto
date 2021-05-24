@@ -205,15 +205,17 @@ function findMatchingCard(octokit, columns, issue) {
 function createCard(octokit, column, issue) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield octokit.rest.projects.createCard({
+            const request = {
                 column_id: column.id,
                 content_id: issue.number,
                 content_type: 'Issue',
                 note: issue.title
-            });
+            };
+            debug_1.debugLog(`Create ${request}`);
+            yield octokit.rest.projects.createCard(request);
         }
         catch (error) {
-            debug_1.debugLog(`[ERROR/project.ts/createCard] ${error}`);
+            debug_1.debugLog(`[ERROR/project.ts/createCard] ${JSON.stringify(error, null, '\t')}`);
         }
     });
 }

@@ -129,7 +129,9 @@ async function createCard(
     debugLog(`Create ${request}`);
     await octokit.rest.projects.createCard(request);
   } catch (error) {
-    debugLog(`[ERROR/project.ts/createCard] ${JSON.stringify(error, null, '\t')}`);
+    debugLog(
+      `[ERROR/project.ts/createCard] ${JSON.stringify(error, null, '\t')}`
+    );
   }
 }
 
