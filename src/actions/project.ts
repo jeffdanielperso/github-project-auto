@@ -1,21 +1,20 @@
 import {GithubActionData} from '../triggers/github';
-import {GitHub} from '@actions/github/lib/utils';
 import {debugLog} from '../debug/debug';
 import * as core from '@actions/core';
-import {Endpoints} from '@octokit/types';
-
-// prettier-ignore
-type TypeOrgResponse = Endpoints["GET /orgs/{org}/projects"]["response"]["data"];
-// prettier-ignore
-type TypeRepoResponse = Endpoints["GET /repos/{owner}/{repo}/projects"]["response"]["data"];
-// prettier-ignore
-type TypeUserResponse = Endpoints["GET /users/{username}/projects"]["response"]["data"];
-type TypeProjectList = TypeRepoResponse;
+import {
+  Octokit,
+  Columns,
+  Project,
+  Projects,
+  OrgProjects,
+  RepoProjects,
+  UserProjects
+} from '../octokit/types';
 
 async function getOrgProjects(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: Octokit,
   org: string
-): Promise<TypeOrgResponse> {
+): Promise<OrgProjects> {
   try {
     const orgProjects = await octokit.rest.projects.listForOrg({
       org
@@ -23,15 +22,15 @@ async function getOrgProjects(
     return orgProjects.data;
   } catch (error) {
     debugLog(`[Error/project.ts/getOrgProjects] ${error}`);
-    return [] as TypeOrgResponse;
+    return [] as OrgProjects;
   }
 }
 
 async function getRepoProjects(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: Octokit,
   owner: string,
   repo: string
-): Promise<TypeRepoResponse> {
+): Promise<RepoProjects> {
   try {
     const repoProjects = await octokit.rest.projects.listForRepo({
       owner,
@@ -40,14 +39,14 @@ async function getRepoProjects(
     return repoProjects.data;
   } catch (error) {
     debugLog(`[Error/project.ts/getRepoProjects] ${error}`);
-    return [] as TypeRepoResponse;
+    return [] as RepoProjects;
   }
 }
 
 async function getUserProjects(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: Octokit,
   username: string
-): Promise<TypeUserResponse> {
+): Promise<UserProjects> {
   try {
     const userProjects = await octokit.rest.projects.listForUser({
       username
@@ -55,15 +54,15 @@ async function getUserProjects(
     return userProjects.data;
   } catch (error) {
     debugLog(`[Error/project.ts/getUserProjects] ${error}`);
-    return [] as TypeUserResponse;
+    return [] as UserProjects;
   }
 }
 
 async function getProjects(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: Octokit,
   actionData: GithubActionData
-): Promise<TypeProjectList> {
-  const projects = [] as TypeProjectList;
+): Promise<Projects> {
+  const projects = [] as Projects;
 
   const orgProjects = await getOrgProjects(octokit, actionData.owner);
   for (const project of orgProjects) {
@@ -88,13 +87,27 @@ async function getProjects(
   // debugLog(`repo: ${JSON.stringify(repoProjects, null, '\t')}`);
   // debugLog(`user: ${JSON.stringify(userProjects, null, '\t')}`);
   // debugLog(`global: ${JSON.stringify(projects, null, '\t')}`);
-
   return projects;
 }
 
+async function getCardsOfProject(
+  octokit: Octokit,
+  columns: Columns
+): Promise<void> {
+  for (const column of columns) {
+    const colCards = await octokit.rest.projects.listCards({
+      column_id: column.id
+    });
+
+    debugLog(`TEESST: ${JSON.stringify(colCards, null, '\t')}`);
+  }
+
+  return;
+}
+
 async function tryAndRunOnProject(
-  octokit: InstanceType<typeof GitHub>,
-  project: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  octokit: Octokit,
+  project: Project,
   columnName: string,
   actionData: GithubActionData // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<void> {
@@ -108,13 +121,15 @@ async function tryAndRunOnProject(
 
   if (matchingColumn) {
     debugLog(
-      `Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.url}`
+      `Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`
     );
+
+    await getCardsOfProject(octokit, columns.data);
   }
 }
 
 export async function runProjectAction(
-  octokit: InstanceType<typeof GitHub>,
+  octokit: Octokit,
   actionData: GithubActionData
 ): Promise<void> {
   try {

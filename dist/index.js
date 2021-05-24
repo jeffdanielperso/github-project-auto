@@ -162,8 +162,18 @@ function getProjects(octokit, actionData) {
         return projects;
     });
 }
-function tryAndRunOnProject(octokit, project, // eslint-disable-line @typescript-eslint/no-explicit-any
-columnName, actionData // eslint-disable-line @typescript-eslint/no-unused-vars
+function getCardsOfProject(octokit, columns) {
+    return __awaiter(this, void 0, void 0, function* () {
+        for (const column of columns) {
+            const colCards = yield octokit.rest.projects.listCards({
+                column_id: column.id
+            });
+            debug_1.debugLog(`TEESST: ${JSON.stringify(colCards, null, '\t')}`);
+        }
+        return;
+    });
+}
+function tryAndRunOnProject(octokit, project, columnName, actionData // eslint-disable-line @typescript-eslint/no-unused-vars
 ) {
     return __awaiter(this, void 0, void 0, function* () {
         const columns = yield octokit.rest.projects.listColumns({
@@ -171,7 +181,8 @@ columnName, actionData // eslint-disable-line @typescript-eslint/no-unused-vars
         });
         const matchingColumn = columns.data.find(column => column.name === columnName);
         if (matchingColumn) {
-            debug_1.debugLog(`Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.url}`);
+            debug_1.debugLog(`Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`);
+            yield getCardsOfProject(octokit, columns.data);
         }
     });
 }

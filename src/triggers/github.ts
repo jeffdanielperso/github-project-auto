@@ -1,5 +1,5 @@
 import * as github from '@actions/github';
-import {GitHub} from '@actions/github/lib/utils';
+import {Octokit} from '../octokit/types';
 
 export type GithubActionData = {
   repo: string;
@@ -41,6 +41,6 @@ export function getGithubActionData(): GithubActionData {
   } as GithubActionData;
 }
 
-export function getOctokit(repoToken: string): InstanceType<typeof GitHub> {
+export function getOctokit(repoToken: string): Octokit {
   return github.getOctokit(repoToken);
 }
