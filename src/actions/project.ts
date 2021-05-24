@@ -121,10 +121,9 @@ async function createCard(
   issue: Issue
 ): Promise<CreatedCard | null> {
   try {
-    const issueNumber = issue.number;
     const request = {
       column_id: column.id,
-      content_id: issueNumber,
+      content_id: issue.id,
       content_type: 'Issue',
       note: `note ${column.id} - ${issue.number} - ${issue.id}`
     };
