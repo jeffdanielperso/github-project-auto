@@ -29,7 +29,7 @@ export async function runProjectAction(
     debugLog(`repo ${JSON.stringify(repoProjects)}`);
     // debugLog(`user ${JSON.stringify(userProjects)}`);
   } catch (error) {
-    debugLog(`[Error/project.ts] ${error}`);
+    debugLog(`[Error/project.ts] ${JSON.stringify(error)}`);
     throw error;
   }
 }
