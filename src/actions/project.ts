@@ -120,14 +120,16 @@ async function createCard(
   issue: Issue
 ): Promise<void> {
   try {
-    await octokit.rest.projects.createCard({
+    const request = {
       column_id: column.id,
       content_id: issue.number,
       content_type: 'Issue',
       note: issue.title
-    });
+    };
+    debugLog(`Create ${request}`);
+    await octokit.rest.projects.createCard(request);
   } catch (error) {
-    debugLog(`[ERROR/project.ts/createCard] ${error}`);
+    debugLog(`[ERROR/project.ts/createCard] ${JSON.stringify(error, null, '\t')}`);
   }
 }
 
