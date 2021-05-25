@@ -3,6 +3,9 @@ on:
   project_card:
     types:
       - moved
+  issues:
+    types:
+      - locked
 jobs:
   moved-to-others:
     if: github.event.project_card.column_id == '14432401' || github.event.project_card.column_id == '14432396'
