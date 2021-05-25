@@ -53,6 +53,8 @@ export class Content {
         context.repository,
         this.id
       );
+
+      Logger.debugOject('issue', this.issue);
     } else if (this.type === ContentType.PullRequestContent) {
       // TODO
     }

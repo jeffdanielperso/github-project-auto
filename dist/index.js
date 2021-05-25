@@ -247,6 +247,7 @@ class Content {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.type === ContentType.IssueContent) {
                 this.issue = yield issues_requests_1.IssuesRequests.getIssue(context.octokit, context.owner, context.repository, this.id);
+                logger_1.Logger.debugOject('issue', this.issue);
             }
             else if (this.type === ContentType.PullRequestContent) {
                 // TODO
