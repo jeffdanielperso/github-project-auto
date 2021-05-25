@@ -2,13 +2,11 @@ import {Issue, PullRequest} from '../github/types';
 import * as github from '@actions/github';
 import {ActionContext} from './context';
 import {IssuesRequests} from '../github/issues_requests';
-import {Logger} from '../logs/logger';
 
 export enum ContentType {
   IssueContent = 'Issue',
   PullRequestContent = 'PullRequest',
-  ProjectCardContent = 'ProjectCard',
-  None = 'None'
+  Unknown = 'None'
 }
 
 export class Content {
@@ -30,12 +28,16 @@ export class Content {
       payload.project_card !== undefined &&
       payload.project_card.content_url
     ) {
-      this.id = payload.project_card.content_url.split('/').pop();
-      this.type = ContentType.ProjectCardContent;
-      Logger.debugOject('Payload.ProjectCard', payload.project_card);
+      const values = payload.project_card.content_url.split('/');
+      this.id = values.pop();
+      const contentType = values.pop();
+      this.type =
+        contentType === 'issues'
+          ? ContentType.IssueContent
+          : ContentType.PullRequestContent;
     } else {
       this.id = -1;
-      this.type = ContentType.None;
+      this.type = ContentType.Unknown;
     }
   }
 
@@ -47,6 +49,8 @@ export class Content {
         context.repository,
         this.id
       );
+    } else if (this.type === ContentType.PullRequestContent) {
+      // TODO
     }
 
     return;
