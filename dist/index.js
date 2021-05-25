@@ -162,7 +162,7 @@ class ProjectAction extends action_base_1.ActionBase {
         super(context, true);
     }
     hasToRun() {
-        throw new Error('Method not implemented.');
+        return !(!this.context.inputs.project || !this.context.inputs.column);
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {

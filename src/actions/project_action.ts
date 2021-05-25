@@ -7,7 +7,7 @@ export class ProjectAction extends ActionBase {
   }
 
   hasToRun(): boolean {
-    throw new Error('Method not implemented.');
+    return !(!this.context.inputs.project || !this.context.inputs.column);
   }
 
   async run(): Promise<ActionResult | undefined> {
