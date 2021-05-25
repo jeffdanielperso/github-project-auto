@@ -303,7 +303,7 @@ class ActionContext {
     loadContent() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.content.type !== content_1.ContentType.NoContent) {
-                this.content.load(this);
+                yield this.content.load(this);
                 logger_1.Logger.debugOject('Content', this.content);
             }
         });
