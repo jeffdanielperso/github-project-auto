@@ -2,12 +2,12 @@ import {Issue, PullRequest} from '../github/types';
 import * as github from '@actions/github';
 import {ActionContext} from './context';
 import {IssuesRequests} from '../github/issues_requests';
-import {Logger} from '../logs/logger';
 
 export enum ContentType {
   IssueContent = 'Issue',
   PullRequestContent = 'PullRequest',
-  Unknown = 'None'
+  NotLoaded = 'NotLoaded',
+  NoContent = 'NoContent'
 }
 
 export class Content {
@@ -29,24 +29,16 @@ export class Content {
       payload.project_card !== undefined &&
       payload.project_card.content_url
     ) {
-      const values = payload.project_card.content_url.split('/');
-      this.id = values.pop();
-      const contentType = values.pop();
-      this.type =
-        contentType === 'issues'
-          ? ContentType.IssueContent
-          : ContentType.PullRequestContent;
-      Logger.debugOject('values', values);
-      Logger.debugData('contentType', contentType);
-      Logger.debugOject('ProjectCard', payload.project_card);
+      this.id = payload.project_card.content_url.split('/').pop();
+      this.type = ContentType.NotLoaded;
     } else {
       this.id = -1;
-      this.type = ContentType.Unknown;
+      this.type = ContentType.NoContent;
     }
   }
 
   async load(context: ActionContext): Promise<void> {
-    if (this.type === ContentType.IssueContent) {
+    if (this.type !== ContentType.NoContent) {
       this.issue = await IssuesRequests.getIssue(
         context.octokit,
         context.owner,
@@ -54,11 +46,11 @@ export class Content {
         this.id
       );
 
-      Logger.debugOject('issue', this.issue);
-    } else if (this.type === ContentType.PullRequestContent) {
-      // TODO
+      if (this.type === ContentType.NotLoaded) {
+        this.type = this.issue.pull_request
+          ? ContentType.PullRequestContent
+          : ContentType.IssueContent;
+      }
     }
-
-    return;
   }
 }

@@ -207,12 +207,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Content = exports.ContentType = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const issues_requests_1 = __nccwpck_require__(9615);
-const logger_1 = __nccwpck_require__(9530);
 var ContentType;
 (function (ContentType) {
     ContentType["IssueContent"] = "Issue";
     ContentType["PullRequestContent"] = "PullRequest";
-    ContentType["Unknown"] = "None";
+    ContentType["NotLoaded"] = "NotLoaded";
+    ContentType["NoContent"] = "NoContent";
 })(ContentType = exports.ContentType || (exports.ContentType = {}));
 class Content {
     constructor() {
@@ -227,32 +227,24 @@ class Content {
         }
         else if (payload.project_card !== undefined &&
             payload.project_card.content_url) {
-            const values = payload.project_card.content_url.split('/');
-            this.id = values.pop();
-            const contentType = values.pop();
-            this.type =
-                contentType === 'issues'
-                    ? ContentType.IssueContent
-                    : ContentType.PullRequestContent;
-            logger_1.Logger.debugOject('values', values);
-            logger_1.Logger.debugData('contentType', contentType);
-            logger_1.Logger.debugOject('ProjectCard', payload.project_card);
+            this.id = payload.project_card.content_url.split('/').pop();
+            this.type = ContentType.NotLoaded;
         }
         else {
             this.id = -1;
-            this.type = ContentType.Unknown;
+            this.type = ContentType.NoContent;
         }
     }
     load(context) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.type === ContentType.IssueContent) {
+            if (this.type !== ContentType.NoContent) {
                 this.issue = yield issues_requests_1.IssuesRequests.getIssue(context.octokit, context.owner, context.repository, this.id);
-                logger_1.Logger.debugOject('issue', this.issue);
+                if (this.type === ContentType.NotLoaded) {
+                    this.type = this.issue.pull_request
+                        ? ContentType.PullRequestContent
+                        : ContentType.IssueContent;
+                }
             }
-            else if (this.type === ContentType.PullRequestContent) {
-                // TODO
-            }
-            return;
         });
     }
 }
@@ -310,7 +302,7 @@ class ActionContext {
     }
     loadContent() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.content.type !== content_1.ContentType.Unknown) {
+            if (this.content.type !== content_1.ContentType.NoContent) {
                 this.content.load(this);
                 logger_1.Logger.debugOject('Content', this.content);
             }
@@ -471,7 +463,7 @@ function run() {
             // Create & Init context
             const context = new context_1.ActionContext();
             // Check if content is known (Issue or PullRequest)
-            if (context.content.type === content_1.ContentType.Unknown) {
+            if (context.content.type === content_1.ContentType.NoContent) {
                 throw new Error('Error: Could not determinate Issue or PullRequest.');
             }
             // Load content

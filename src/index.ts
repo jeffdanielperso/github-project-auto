@@ -9,7 +9,7 @@ async function run(): Promise<void> {
     const context = new ActionContext();
 
     // Check if content is known (Issue or PullRequest)
-    if (context.content.type === ContentType.Unknown) {
+    if (context.content.type === ContentType.NoContent) {
       throw new Error('Error: Could not determinate Issue or PullRequest.');
     }
 
