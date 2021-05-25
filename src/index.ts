@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import {ActionContext} from './context/context';
 import {ContentType} from './context/content';
-import { Orchestrator } from './actions/orchestrator';
+import {Orchestrator} from './actions/orchestrator';
 
 async function run(): Promise<void> {
   try {
