@@ -1,33 +1,23 @@
 import * as core from '@actions/core';
-import {getRepoToken} from './triggers/input';
-import {getOctokit, getGithubActionData} from './triggers/github';
-import {runLabelsAction} from './actions/labels';
-import {runProjectAction} from './actions/project';
-import {getIssue} from './actions/issues';
-//import {debugLogs} from './debug/debug';
+import {ActionContext} from './context/context';
+import {ContentType} from './context/content';
+import { Orchestrator } from './actions/orchestrator';
 
 async function run(): Promise<void> {
   try {
-    // Getting common data
-    const actionData = getGithubActionData();
-    const repoToken = getRepoToken();
+    // Create & Init context
+    const context = new ActionContext();
 
-    if (!actionData.issueNumber) {
-      throw new Error('Error: Could not determinate Issue.');
+    // Check if content is known (Issue or PullRequest)
+    if (context.content.type === ContentType.None) {
+      throw new Error('Error: Could not determinate Issue or PullRequest.');
     }
 
-    // Uncomment for debug logs
-    //debugLogs();
-
-    // Getting octokit
-    const octokit = getOctokit(repoToken);
-
-    // Get issue
-    const issue = await getIssue(octokit, actionData);
+    // Load content
+    await context.loadContent();
 
     // Run actions
-    runLabelsAction(octokit, actionData, issue);
-    runProjectAction(octokit, actionData, issue);
+    await Orchestrator.runActions(context);
   } catch (error) {
     core.setFailed(error.message);
   }
