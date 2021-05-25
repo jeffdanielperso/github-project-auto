@@ -6,6 +6,9 @@ on:
   issues:
     types:
       - locked
+  pull_request:
+    types:
+      - locked
 jobs:
   test-a-la-con:
     runs-on: ubuntu-latest

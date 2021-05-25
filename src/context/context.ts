@@ -20,10 +20,9 @@ export class ActionContext {
   }
 
   async loadContent(): Promise<void> {
-    if (this.content.type !== ContentType.None) {
-      Logger.debugOject('Content', this.content);
-
+    if (this.content.type !== ContentType.Unknown) {
       this.content.load(this);
+      Logger.debugOject('Content', this.content);
     }
   }
 }
