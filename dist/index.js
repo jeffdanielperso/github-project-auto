@@ -207,6 +207,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Content = exports.ContentType = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const issues_requests_1 = __nccwpck_require__(9615);
+const logger_1 = __nccwpck_require__(9530);
 var ContentType;
 (function (ContentType) {
     ContentType["IssueContent"] = "Issue";
@@ -233,6 +234,9 @@ class Content {
                 contentType === 'issues'
                     ? ContentType.IssueContent
                     : ContentType.PullRequestContent;
+            logger_1.Logger.debugOject('values', values);
+            logger_1.Logger.debugData('contentType', contentType);
+            logger_1.Logger.debugOject('ProjectCard', payload.project_card);
         }
         else {
             this.id = -1;

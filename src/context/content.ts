@@ -2,6 +2,7 @@ import {Issue, PullRequest} from '../github/types';
 import * as github from '@actions/github';
 import {ActionContext} from './context';
 import {IssuesRequests} from '../github/issues_requests';
+import {Logger} from '../logs/logger';
 
 export enum ContentType {
   IssueContent = 'Issue',
@@ -35,6 +36,9 @@ export class Content {
         contentType === 'issues'
           ? ContentType.IssueContent
           : ContentType.PullRequestContent;
+      Logger.debugOject('values', values);
+      Logger.debugData('contentType', contentType);
+      Logger.debugOject('ProjectCard', payload.project_card);
     } else {
       this.id = -1;
       this.type = ContentType.Unknown;
