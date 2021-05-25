@@ -58,14 +58,12 @@ class LabelAction extends action_base_1.ActionBase {
     }
     constructor(context) {
         super(context, false);
-        logger_1.Logger.debug('Label Action constructor');
     }
     hasToRun() {
         return this.labelsToAdd.length !== 0 || this.labelsToRemove.length !== 0;
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.Logger.debug('Label Action run');
             if (this.hasToRun()) {
                 try {
                     const content = this.context.content.issue;
@@ -77,7 +75,6 @@ class LabelAction extends action_base_1.ActionBase {
                         }
                     }
                     labels = labels.filter(value => !this.labelsToRemove.includes(value));
-                    logger_1.Logger.debug('Label Action before update');
                     // Update Issue labels
                     if (this.needAsync) {
                         yield issues_requests_1.IssuesRequests.updateLabels(this.context, labels);
@@ -156,17 +153,57 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ProjectAction = void 0;
+const projects_requests_1 = __nccwpck_require__(4133);
+const logger_1 = __nccwpck_require__(9530);
 const action_base_1 = __nccwpck_require__(6233);
 class ProjectAction extends action_base_1.ActionBase {
     constructor(context) {
         super(context, true);
+        logger_1.Logger.debug('ProjectAction constructor');
     }
     hasToRun() {
         return !(!this.context.inputs.project || !this.context.inputs.column);
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            return action_base_1.ActionResult.Failed;
+            logger_1.Logger.debug('ProjectAction run');
+            if (this.hasToRun()) {
+                try {
+                    // Get projects
+                    const projects = yield this.getProjects();
+                    logger_1.Logger.debugOject('Projects', projects);
+                    // Get matching projects
+                    const matchingProjects = projects.filter(p => p.name === this.context.inputs.project);
+                    logger_1.Logger.debugOject('MatchingProjects', matchingProjects);
+                    // // Try & Run action on matching projects
+                    // for (const project of matchingProjects) {
+                    //   tryAndRunOnProject(context, project);
+                    // }
+                    return action_base_1.ActionResult.Success;
+                }
+                catch (error) {
+                    logger_1.Logger.error(error);
+                    return action_base_1.ActionResult.Failed;
+                }
+            }
+        });
+    }
+    getProjects() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const projects = [];
+            const orgProjects = yield projects_requests_1.ProjectsRequests.getOrgProjects(this.context);
+            for (const project of orgProjects) {
+                projects.push(project);
+            }
+            const repoProjects = yield projects_requests_1.ProjectsRequests.getRepoProjects(this.context);
+            for (const project of repoProjects) {
+                projects.push(project);
+            }
+            const userProjects = yield projects_requests_1.ProjectsRequests.getUserProjects(this.context);
+            for (const project of userProjects) {
+                projects.push(project);
+            }
+            return projects;
         });
     }
 }
@@ -418,6 +455,105 @@ class IssuesRequests {
     }
 }
 exports.IssuesRequests = IssuesRequests;
+
+
+/***/ }),
+
+/***/ 4133:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ProjectsRequests = void 0;
+const logger_1 = __nccwpck_require__(9530);
+class ProjectsRequests {
+    //#region Projects
+    static getOrgProjects(context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const orgProjects = yield context.octokit.rest.projects.listForOrg({
+                    org: context.owner
+                });
+                return orgProjects.data;
+            }
+            catch (error) {
+                logger_1.Logger.error(error);
+                return [];
+            }
+        });
+    }
+    static getRepoProjects(context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const repoProjects = yield context.octokit.rest.projects.listForRepo({
+                    owner: context.owner,
+                    repo: context.repository
+                });
+                return repoProjects.data;
+            }
+            catch (error) {
+                logger_1.Logger.error(error);
+                return [];
+            }
+        });
+    }
+    static getUserProjects(context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userProjects = yield context.octokit.rest.projects.listForUser({
+                    username: context.owner
+                });
+                return userProjects.data;
+            }
+            catch (error) {
+                logger_1.Logger.error(error);
+                return [];
+            }
+        });
+    }
+    //#endregion
+    //#region Cards
+    static getCards(context, column) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield context.octokit.rest.projects.listCards({
+                    column_id: column.id
+                });
+                return response.data;
+            }
+            catch (error) {
+                logger_1.Logger.error(error);
+                return [];
+            }
+        });
+    }
+    static createCard(context, column) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield context.octokit.rest.projects.createCard({
+                    column_id: column.id,
+                    content_id: (_a = context.content) === null || _a === void 0 ? void 0 : _a.id,
+                    content_type: context.content.type
+                });
+            }
+            catch (error) {
+                logger_1.Logger.error(error);
+            }
+        });
+    }
+}
+exports.ProjectsRequests = ProjectsRequests;
 
 
 /***/ }),
