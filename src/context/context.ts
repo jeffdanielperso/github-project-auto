@@ -21,7 +21,7 @@ export class ActionContext {
 
   async loadContent(): Promise<void> {
     if (this.content.type !== ContentType.NoContent) {
-      this.content.load(this);
+      await this.content.load(this);
       Logger.debugOject('Content', this.content);
     }
   }
