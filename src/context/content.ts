@@ -1,4 +1,4 @@
-import {Issue, PullRequest} from '../github/types';
+import {Issue} from '../github/types';
 import * as github from '@actions/github';
 import {ActionContext} from './context';
 import {IssuesRequests} from '../github/issues_requests';
@@ -13,7 +13,6 @@ export enum ContentType {
 export class Content {
   id: number;
   issue?: Issue;
-  pullRequest?: PullRequest;
   type: ContentType;
 
   constructor() {

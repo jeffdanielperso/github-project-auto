@@ -2,7 +2,6 @@ import {Octokit} from '../github/types';
 import {ActionInputs, getInputs} from './inputs';
 import * as github from '@actions/github';
 import {Content, ContentType} from './content';
-import {Logger} from '../logs/logger';
 
 export class ActionContext {
   inputs: ActionInputs;
@@ -22,7 +21,6 @@ export class ActionContext {
   async loadContent(): Promise<void> {
     if (this.content.type !== ContentType.NoContent) {
       await this.content.load(this);
-      Logger.debugOject('Content', this.content);
     }
   }
 }

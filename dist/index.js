@@ -58,12 +58,14 @@ class LabelAction extends action_base_1.ActionBase {
     }
     constructor(context) {
         super(context, false);
+        logger_1.Logger.debug('Label Action constructor');
     }
     hasToRun() {
         return this.labelsToAdd.length !== 0 || this.labelsToRemove.length !== 0;
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
+            logger_1.Logger.debug('Label Action run');
             if (this.hasToRun()) {
                 try {
                     const content = this.context.content.issue;
@@ -75,6 +77,7 @@ class LabelAction extends action_base_1.ActionBase {
                         }
                     }
                     labels = labels.filter(value => !this.labelsToRemove.includes(value));
+                    logger_1.Logger.debug('Label Action before update');
                     // Update Issue labels
                     if (this.needAsync) {
                         yield issues_requests_1.IssuesRequests.updateLabels(this.context, labels);
@@ -114,11 +117,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Orchestrator = void 0;
+const logger_1 = __nccwpck_require__(9530);
 const labels_action_1 = __nccwpck_require__(4274);
 const project_action_1 = __nccwpck_require__(193);
 class Orchestrator {
     static runActions(context) {
         return __awaiter(this, void 0, void 0, function* () {
+            logger_1.Logger.debug('orchestrator.runActions');
             for (const actionType of Orchestrator.actionTypes) {
                 const action = new actionType(context);
                 if (action.hasToRun()) {
@@ -291,7 +296,6 @@ exports.ActionContext = void 0;
 const inputs_1 = __nccwpck_require__(6867);
 const github = __importStar(__nccwpck_require__(5438));
 const content_1 = __nccwpck_require__(2304);
-const logger_1 = __nccwpck_require__(9530);
 class ActionContext {
     constructor() {
         this.inputs = inputs_1.getInputs();
@@ -304,7 +308,6 @@ class ActionContext {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.content.type !== content_1.ContentType.NoContent) {
                 yield this.content.load(this);
-                logger_1.Logger.debugOject('Content', this.content);
             }
         });
     }

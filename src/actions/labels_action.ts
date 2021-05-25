@@ -15,6 +15,7 @@ export class LabelAction extends ActionBase {
 
   constructor(context: ActionContext) {
     super(context, false);
+    Logger.debug('Label Action constructor');
   }
 
   hasToRun(): boolean {
@@ -22,6 +23,7 @@ export class LabelAction extends ActionBase {
   }
 
   async run(): Promise<ActionResult | undefined> {
+    Logger.debug('Label Action run');
     if (this.hasToRun()) {
       try {
         const content = this.context.content.issue as Issue;
@@ -34,6 +36,7 @@ export class LabelAction extends ActionBase {
           }
         }
         labels = labels.filter(value => !this.labelsToRemove.includes(value));
+        Logger.debug('Label Action before update');
 
         // Update Issue labels
         if (this.needAsync) {
