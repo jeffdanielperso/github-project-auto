@@ -12,7 +12,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "package": "ncc build --source-map --license licenses.txt",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test",
-    "tag-latest": "git push origin :refs/tags/latest && git tag -fa latest -m \"Github Project Auto\" && git push origin master --tags"
+    "tag-latest": "git push origin :refs/tags/latest && git tag -fa latest -m \"Github Project Auto - Latest\" && git push origin master --tags"
   },
   "repository": {
     "type": "git",
