@@ -24,45 +24,49 @@ export class ProjectAction extends ActionBase {
         const matchingProjects = projects.filter(
           p => p.name === this.context.inputs.project
         );
-        Logger.debugObject('MatchingProjects', matchingProjects);
 
+        // Try & Run the action for all matching Projects
         for (const project of matchingProjects) {
+          // Get Columns of Project
           const columns = await ProjectsRequests.getColumns(
             this.context,
             project.id
           );
 
+          // Look for matching Column
           const matchingColumn = columns.find(
             column => column.name === this.context.inputs.column
           );
 
+          // Found matching Column
           if (matchingColumn) {
             Logger.debug(
               `Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]`
             );
 
+            // Look for matching Card
             const matchingCard = await this.findCard(columns);
             if (matchingCard) {
+              // If card already exists => Move Card
               Logger.debugObject(`Found matching card:`, matchingCard);
-            } else {
-              Logger.debugObject(
-                `No matching card => creation`,
-                this.context.content
+              await ProjectsRequests.moveCard(
+                this.context,
+                matchingColumn.id,
+                matchingCard.id,
+                'bottom'
               );
-              const card = await ProjectsRequests.createCard(
+              Logger.debug(`Should have moved`);
+            } else {
+              // Else => Create Card
+              await ProjectsRequests.createCard(
                 this.context,
                 matchingColumn.id,
                 this.context.content.id,
                 this.context.content.type
               );
-              Logger.debugObject(`Card created`, card);
             }
           }
         }
-        // // Try & Run action on matching projects
-        // for (const project of matchingProjects) {
-        //   tryAndRunOnProject(context, project);
-        // }
         return ActionResult.Success;
       } catch (error) {
         Logger.error(error);
@@ -110,32 +114,5 @@ export class ProjectAction extends ActionBase {
   //   columns: Columns
   // ): Promise<Card | null> {
   //
-  // }
-
-  // async function tryAndRunOnProject(
-  //   context: ActionContext,
-  //   project: Project
-  // ): Promise<void> {
-  //   const columns = await context.octokit.rest.projects.listColumns({
-  //     project_id: project.id
-  //   });
-  //   //debugLog(`Issue ${JSON.stringify(issue, null, '\t')}`);
-  //   const matchingColumn = columns.data.find(
-  //     column => column.name === context.inputs.column
-  //   );
-
-  //   if (matchingColumn) {
-  //     debugLog(
-  //       `Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]\n${project.html_url}`
-  //     );
-
-  //     const matchingCard = await findMatchingCard(context, columns.data);
-  //     if (matchingCard) {
-  //       debugLog(`Card existing in project`);
-  //     } else {
-  //       const test = await createCard(context, matchingColumn);
-  //       debugLog(`TestResult ${JSON.stringify(test, null, '\t')}`);
-  //     }
-  //   }
   // }
 }

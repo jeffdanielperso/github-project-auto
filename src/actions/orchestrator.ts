@@ -15,7 +15,5 @@ export class Orchestrator {
         await action.run();
       }
     }
-
-    return;
   }
 }

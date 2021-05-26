@@ -101,5 +101,22 @@ export class ProjectsRequests {
       return null;
     }
   }
+
+  static async moveCard(
+    context: ActionContext,
+    column_id: number,
+    card_id: number,
+    position: string
+  ): Promise<void> {
+    try {
+      await context.octokit.rest.projects.moveCard({
+        card_id,
+        column_id,
+        position
+      });
+    } catch (error) {
+      Logger.error(error);
+    }
+  }
   //#endregion
 }

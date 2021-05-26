@@ -127,7 +127,6 @@ class Orchestrator {
                     yield action.run();
                 }
             }
-            return;
         });
     }
 }
@@ -172,27 +171,29 @@ class ProjectAction extends action_base_1.ActionBase {
                     const projects = yield this.getProjects();
                     // Get matching projects
                     const matchingProjects = projects.filter(p => p.name === this.context.inputs.project);
-                    logger_1.Logger.debugObject('MatchingProjects', matchingProjects);
+                    // Try & Run the action for all matching Projects
                     for (const project of matchingProjects) {
+                        // Get Columns of Project
                         const columns = yield projects_requests_1.ProjectsRequests.getColumns(this.context, project.id);
+                        // Look for matching Column
                         const matchingColumn = columns.find(column => column.name === this.context.inputs.column);
+                        // Found matching Column
                         if (matchingColumn) {
                             logger_1.Logger.debug(`Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]`);
+                            // Look for matching Card
                             const matchingCard = yield this.findCard(columns);
                             if (matchingCard) {
+                                // If card already exists => Move Card
                                 logger_1.Logger.debugObject(`Found matching card:`, matchingCard);
+                                yield projects_requests_1.ProjectsRequests.moveCard(this.context, matchingColumn.id, matchingCard.id, 'bottom');
+                                logger_1.Logger.debug(`Should have moved`);
                             }
                             else {
-                                logger_1.Logger.debugObject(`No matching card => creation`, this.context.content);
-                                const card = yield projects_requests_1.ProjectsRequests.createCard(this.context, matchingColumn.id, this.context.content.id, this.context.content.type);
-                                logger_1.Logger.debugObject(`Card created`, card);
+                                // Else => Create Card
+                                yield projects_requests_1.ProjectsRequests.createCard(this.context, matchingColumn.id, this.context.content.id, this.context.content.type);
                             }
                         }
                     }
-                    // // Try & Run action on matching projects
-                    // for (const project of matchingProjects) {
-                    //   tryAndRunOnProject(context, project);
-                    // }
                     return action_base_1.ActionResult.Success;
                 }
                 catch (error) {
@@ -594,6 +595,20 @@ class ProjectsRequests {
             catch (error) {
                 logger_1.Logger.error(error);
                 return null;
+            }
+        });
+    }
+    static moveCard(context, column_id, card_id, position) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield context.octokit.rest.projects.moveCard({
+                    card_id,
+                    column_id,
+                    position
+                });
+            }
+            catch (error) {
+                logger_1.Logger.error(error);
             }
         });
     }
