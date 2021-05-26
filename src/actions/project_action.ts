@@ -45,7 +45,10 @@ export class ProjectAction extends ActionBase {
             if (matchingCard) {
               Logger.debugObject(`Found matching card:`, matchingCard);
             } else {
-              Logger.debug(`No matching card => creation`);
+              Logger.debugObject(
+                `No matching card => creation`,
+                this.context.content
+              );
               const card = await ProjectsRequests.createCard(
                 this.context,
                 matchingColumn.id,

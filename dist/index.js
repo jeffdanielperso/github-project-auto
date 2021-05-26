@@ -183,7 +183,7 @@ class ProjectAction extends action_base_1.ActionBase {
                                 logger_1.Logger.debugObject(`Found matching card:`, matchingCard);
                             }
                             else {
-                                logger_1.Logger.debug(`No matching card => creation`);
+                                logger_1.Logger.debugObject(`No matching card => creation`, this.context.content);
                                 const card = yield projects_requests_1.ProjectsRequests.createCard(this.context, matchingColumn.id, this.context.content.id, this.context.content.type);
                                 logger_1.Logger.debugObject(`Card created`, card);
                             }
