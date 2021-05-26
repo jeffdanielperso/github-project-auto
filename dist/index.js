@@ -114,13 +114,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Orchestrator = void 0;
-const logger_1 = __nccwpck_require__(9530);
 const labels_action_1 = __nccwpck_require__(4274);
 const project_action_1 = __nccwpck_require__(193);
 class Orchestrator {
     static runActions(context) {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.Logger.debug('orchestrator.runActions');
             for (const actionType of Orchestrator.actionTypes) {
                 const action = new actionType(context);
                 if (action.hasToRun()) {
@@ -158,7 +156,6 @@ const action_base_1 = __nccwpck_require__(6233);
 class ProjectAction extends action_base_1.ActionBase {
     constructor(context) {
         super(context, true);
-        logger_1.Logger.debug('ProjectAction constructor');
     }
     hasToRun() {
         return !(!this.context.inputs.project || !this.context.inputs.column);
@@ -179,14 +176,11 @@ class ProjectAction extends action_base_1.ActionBase {
                         const matchingColumn = columns.find(column => column.name === this.context.inputs.column);
                         // Found matching Column
                         if (matchingColumn) {
-                            logger_1.Logger.debug(`Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]`);
                             // Look for matching Card
                             const matchingCard = yield this.findCard(columns);
                             if (matchingCard) {
                                 // If card already exists => Move Card
-                                logger_1.Logger.debugObject(`Found matching card:`, matchingCard);
                                 yield projects_requests_1.ProjectsRequests.moveCard(this.context, matchingColumn.id, matchingCard.id, 'bottom');
-                                logger_1.Logger.debug(`Should have moved`);
                             }
                             else {
                                 // Else => Create Card

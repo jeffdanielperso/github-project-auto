@@ -7,7 +7,6 @@ import {ActionBase, ActionResult} from './action_base';
 export class ProjectAction extends ActionBase {
   constructor(context: ActionContext) {
     super(context, true);
-    Logger.debug('ProjectAction constructor');
   }
 
   hasToRun(): boolean {
@@ -40,22 +39,16 @@ export class ProjectAction extends ActionBase {
 
           // Found matching Column
           if (matchingColumn) {
-            Logger.debug(
-              `Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]`
-            );
-
             // Look for matching Card
             const matchingCard = await this.findCard(columns);
             if (matchingCard) {
               // If card already exists => Move Card
-              Logger.debugObject(`Found matching card:`, matchingCard);
               await ProjectsRequests.moveCard(
                 this.context,
                 matchingColumn.id,
                 matchingCard.id,
                 'bottom'
               );
-              Logger.debug(`Should have moved`);
             } else {
               // Else => Create Card
               await ProjectsRequests.createCard(
@@ -108,11 +101,4 @@ export class ProjectAction extends ActionBase {
     }
     return null;
   }
-
-  // static async findMatchingCard(
-  //   context: ActionContext,
-  //   columns: Columns
-  // ): Promise<Card | null> {
-  //
-  // }
 }
