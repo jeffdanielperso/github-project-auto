@@ -21,7 +21,7 @@ export class IssuesRequests {
       context.octokit,
       context.owner,
       context.repository,
-      context.content.id
+      context.content.number
     );
   }
 
@@ -32,7 +32,7 @@ export class IssuesRequests {
     await context.octokit.rest.issues.update({
       owner: context.owner,
       repo: context.repository,
-      issue_number: context.content.id,
+      issue_number: context.content.number,
       labels
     });
   }

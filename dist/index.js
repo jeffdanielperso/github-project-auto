@@ -307,7 +307,7 @@ class Content {
     load(context) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.type !== ContentType.NoContent) {
-                this.issue = yield issues_requests_1.IssuesRequests.getIssue(context.octokit, context.owner, context.repository, this.id);
+                this.issue = yield issues_requests_1.IssuesRequests.getIssueOfContext(context);
                 this.id = this.issue.id;
                 if (this.type === ContentType.NotLoaded) {
                     this.type = this.issue.pull_request
@@ -468,7 +468,7 @@ class IssuesRequests {
     }
     static getIssueOfContext(context) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.getIssue(context.octokit, context.owner, context.repository, context.content.id);
+            return yield this.getIssue(context.octokit, context.owner, context.repository, context.content.number);
         });
     }
     static updateLabels(context, labels) {
@@ -476,7 +476,7 @@ class IssuesRequests {
             yield context.octokit.rest.issues.update({
                 owner: context.owner,
                 repo: context.repository,
-                issue_number: context.content.id,
+                issue_number: context.content.number,
                 labels
             });
         });

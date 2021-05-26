@@ -39,12 +39,7 @@ export class Content {
 
   async load(context: ActionContext): Promise<void> {
     if (this.type !== ContentType.NoContent) {
-      this.issue = await IssuesRequests.getIssue(
-        context.octokit,
-        context.owner,
-        context.repository,
-        this.id
-      );
+      this.issue = await IssuesRequests.getIssueOfContext(context);
       this.id = this.issue.id;
       if (this.type === ContentType.NotLoaded) {
         this.type = this.issue.pull_request
