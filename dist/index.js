@@ -166,15 +166,29 @@ class ProjectAction extends action_base_1.ActionBase {
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.Logger.debug('ProjectAction run');
             if (this.hasToRun()) {
                 try {
                     // Get projects
                     const projects = yield this.getProjects();
-                    logger_1.Logger.debugOject('Projects', projects);
                     // Get matching projects
                     const matchingProjects = projects.filter(p => p.name === this.context.inputs.project);
-                    logger_1.Logger.debugOject('MatchingProjects', matchingProjects);
+                    logger_1.Logger.debugObject('MatchingProjects', matchingProjects);
+                    for (const project of matchingProjects) {
+                        const columns = yield projects_requests_1.ProjectsRequests.getColumns(this.context, project.id);
+                        const matchingColumn = columns.find(column => column.name === this.context.inputs.column);
+                        if (matchingColumn) {
+                            logger_1.Logger.debug(`Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]`);
+                            const matchingCard = yield this.findCard(columns);
+                            if (matchingCard) {
+                                logger_1.Logger.debugObject(`Found matching card:`, matchingCard);
+                            }
+                            else {
+                                logger_1.Logger.debug(`No matching card => creation`);
+                                // const test = await createCard(context, matchingColumn);
+                                // debugLog(`TestResult ${JSON.stringify(test, null, '\t')}`);
+                            }
+                        }
+                    }
                     // // Try & Run action on matching projects
                     // for (const project of matchingProjects) {
                     //   tryAndRunOnProject(context, project);
@@ -204,6 +218,20 @@ class ProjectAction extends action_base_1.ActionBase {
                 projects.push(project);
             }
             return projects;
+        });
+    }
+    findCard(columns) {
+        return __awaiter(this, void 0, void 0, function* () {
+            for (const column of columns) {
+                const response = yield this.context.octokit.rest.projects.listCards({
+                    column_id: column.id
+                });
+                const matchingCard = response.data.find(card => { var _a; return card.content_url === ((_a = this.context.content.issue) === null || _a === void 0 ? void 0 : _a.url); });
+                if (matchingCard) {
+                    return matchingCard;
+                }
+            }
+            return null;
         });
     }
 }
@@ -522,6 +550,22 @@ class ProjectsRequests {
         });
     }
     //#endregion
+    //#region Columns
+    static getColumns(context, projectId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield context.octokit.rest.projects.listColumns({
+                    project_id: projectId
+                });
+                return response.data;
+            }
+            catch (error) {
+                logger_1.Logger.error(error);
+                return [];
+            }
+        });
+    }
+    //#endregion
     //#region Cards
     static getCards(context, column) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -654,7 +698,7 @@ class Logger {
     static debug(value) {
         core.debug(value);
     }
-    static debugOject(name, object) {
+    static debugObject(name, object) {
         this.debug(`${name}\n${JSON.stringify(object, null, '\t')}`);
     }
     static debugData(name, data) {

@@ -1,6 +1,13 @@
 import {ActionContext} from '../context/context';
 import {Logger} from '../logs/logger';
-import {Cards, Column, OrgProjects, RepoProjects, UserProjects} from './types';
+import {
+  Cards,
+  Column,
+  Columns,
+  OrgProjects,
+  RepoProjects,
+  UserProjects
+} from './types';
 
 export class ProjectsRequests {
   //#region Projects
@@ -38,6 +45,23 @@ export class ProjectsRequests {
     } catch (error) {
       Logger.error(error);
       return [] as UserProjects;
+    }
+  }
+  //#endregion
+
+  //#region Columns
+  static async getColumns(
+    context: ActionContext,
+    projectId: number
+  ): Promise<Columns> {
+    try {
+      const response = await context.octokit.rest.projects.listColumns({
+        project_id: projectId
+      });
+      return response.data;
+    } catch (error) {
+      Logger.error(error);
+      return [] as Columns;
     }
   }
   //#endregion

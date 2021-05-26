@@ -1,6 +1,6 @@
 import {ActionContext} from '../context/context';
 import {ProjectsRequests} from '../github/projects_requests';
-import {Projects} from '../github/types';
+import {Card, Columns, Projects} from '../github/types';
 import {Logger} from '../logs/logger';
 import {ActionBase, ActionResult} from './action_base';
 
@@ -15,19 +15,42 @@ export class ProjectAction extends ActionBase {
   }
 
   async run(): Promise<ActionResult | undefined> {
-    Logger.debug('ProjectAction run');
     if (this.hasToRun()) {
       try {
         // Get projects
         const projects = await this.getProjects();
-        Logger.debugOject('Projects', projects);
 
         // Get matching projects
         const matchingProjects = projects.filter(
           p => p.name === this.context.inputs.project
         );
-        Logger.debugOject('MatchingProjects', matchingProjects);
+        Logger.debugObject('MatchingProjects', matchingProjects);
 
+        for (const project of matchingProjects) {
+          const columns = await ProjectsRequests.getColumns(
+            this.context,
+            project.id
+          );
+
+          const matchingColumn = columns.find(
+            column => column.name === this.context.inputs.column
+          );
+
+          if (matchingColumn) {
+            Logger.debug(
+              `Found matching project '${project.name}' [${project.id}] & column '${matchingColumn.name}' [${matchingColumn.id}]`
+            );
+
+            const matchingCard = await this.findCard(columns);
+            if (matchingCard) {
+              Logger.debugObject(`Found matching card:`, matchingCard);
+            } else {
+              Logger.debug(`No matching card => creation`);
+              // const test = await createCard(context, matchingColumn);
+              // debugLog(`TestResult ${JSON.stringify(test, null, '\t')}`);
+            }
+          }
+        }
         // // Try & Run action on matching projects
         // for (const project of matchingProjects) {
         //   tryAndRunOnProject(context, project);
@@ -61,23 +84,26 @@ export class ProjectAction extends ActionBase {
     return projects;
   }
 
+  private async findCard(columns: Columns): Promise<Card | null> {
+    for (const column of columns) {
+      const response = await this.context.octokit.rest.projects.listCards({
+        column_id: column.id
+      });
+      const matchingCard = response.data.find(
+        card => card.content_url === this.context.content.issue?.url
+      );
+      if (matchingCard) {
+        return matchingCard;
+      }
+    }
+    return null;
+  }
+
   // static async findMatchingCard(
   //   context: ActionContext,
   //   columns: Columns
   // ): Promise<Card | null> {
-  //   for (const column of columns) {
-  //     const colCards = await context.octokit.rest.projects.listCards({
-  //       column_id: column.id
-  //     });
-  //     const matchingCard = colCards.data.find(
-  //       card => card.content_url === context.content.issue?.url
-  //     );
-  //     if (matchingCard) {
-  //       //debugLog(`MatchingCard ${JSON.stringify(matchingCard, null, '\t')}`);
-  //       return matchingCard;
-  //     }
-  //   }
-  //   return null;
+  //
   // }
 
   // async function tryAndRunOnProject(
@@ -104,27 +130,6 @@ export class ProjectAction extends ActionBase {
   //       const test = await createCard(context, matchingColumn);
   //       debugLog(`TestResult ${JSON.stringify(test, null, '\t')}`);
   //     }
-  //   }
-  // }
-
-  // export async function runProjectAction(
-  //   context: ActionContext
-  // ): Promise<void> {
-  //   try {
-  //     if (!context.inputs.project || !context.inputs.column) return;
-
-  //     // Get projects
-  //     const projects = await getProjects(context);
-
-  //     // Get matching projects
-  //     const matchingProjects = projects.filter(p => p.name === context.inputs.project);
-
-  //     // Try & Run action on matching projects
-  //     for (const project of matchingProjects) {
-  //       tryAndRunOnProject(context, project);
-  //     }
-  //   } catch (error) {
-  //     debugLog(`[Error/project.ts] ${error}`);
   //   }
   // }
 }

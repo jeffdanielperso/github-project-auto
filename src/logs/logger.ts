@@ -9,7 +9,7 @@ export class Logger {
     core.debug(value);
   }
 
-  static debugOject<T>(name: string, object: T): void {
+  static debugObject<T>(name: string, object: T): void {
     this.debug(`${name}\n${JSON.stringify(object, null, '\t')}`);
   }
 
