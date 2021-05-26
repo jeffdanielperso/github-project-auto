@@ -1,4 +1,6 @@
 node_modules/
 lib/
-dist/
+dist/index.js.map
+dist/licenses.txt
+dist/sourcemap-register.js
 .DS_store
