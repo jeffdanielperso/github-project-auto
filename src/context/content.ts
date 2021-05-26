@@ -28,7 +28,7 @@ export class Content {
       payload.project_card !== undefined &&
       payload.project_card.content_url
     ) {
-      this.id = payload.project_card.content_url.split('/').pop();
+      this.id = +payload.project_card.content_url.split('/').pop();
       this.type = ContentType.NotLoaded;
     } else {
       this.id = -1;
