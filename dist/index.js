@@ -284,22 +284,23 @@ var ContentType;
 })(ContentType = exports.ContentType || (exports.ContentType = {}));
 class Content {
     constructor() {
+        this.id = -1;
         const payload = github.context.payload;
         if (payload.issue) {
-            this.id = payload.issue.number;
+            this.number = payload.issue.number;
             this.type = ContentType.IssueContent;
         }
         else if (payload.pull_request) {
-            this.id = payload.pull_request.number;
+            this.number = payload.pull_request.number;
             this.type = ContentType.PullRequestContent;
         }
         else if (payload.project_card !== undefined &&
             payload.project_card.content_url) {
-            this.id = +payload.project_card.content_url.split('/').pop();
+            this.number = +payload.project_card.content_url.split('/').pop();
             this.type = ContentType.NotLoaded;
         }
         else {
-            this.id = -1;
+            this.number = -1;
             this.type = ContentType.NoContent;
         }
     }
@@ -307,6 +308,7 @@ class Content {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.type !== ContentType.NoContent) {
                 this.issue = yield issues_requests_1.IssuesRequests.getIssue(context.octokit, context.owner, context.repository, this.id);
+                this.id = this.issue.id;
                 if (this.type === ContentType.NotLoaded) {
                     this.type = this.issue.pull_request
                         ? ContentType.PullRequestContent
