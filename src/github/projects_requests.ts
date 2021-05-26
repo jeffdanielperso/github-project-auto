@@ -1,6 +1,7 @@
 import {ActionContext} from '../context/context';
 import {Logger} from '../logs/logger';
 import {
+  Card,
   Cards,
   Column,
   Columns,
@@ -84,16 +85,20 @@ export class ProjectsRequests {
 
   static async createCard(
     context: ActionContext,
-    column: Column
-  ): Promise<void> {
+    column_id: number,
+    content_id: number,
+    content_type: string
+  ): Promise<Card | null> {
     try {
-      await context.octokit.rest.projects.createCard({
-        column_id: column.id,
-        content_id: context.content?.id,
-        content_type: context.content.type
+      const response = await context.octokit.rest.projects.createCard({
+        column_id,
+        content_id,
+        content_type
       });
+      return response.data;
     } catch (error) {
       Logger.error(error);
+      return null;
     }
   }
   //#endregion

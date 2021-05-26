@@ -184,8 +184,8 @@ class ProjectAction extends action_base_1.ActionBase {
                             }
                             else {
                                 logger_1.Logger.debug(`No matching card => creation`);
-                                // const test = await createCard(context, matchingColumn);
-                                // debugLog(`TestResult ${JSON.stringify(test, null, '\t')}`);
+                                const card = yield projects_requests_1.ProjectsRequests.createCard(this.context, matchingColumn.id, this.context.content.id, this.context.content.type);
+                                logger_1.Logger.debugObject(`Card created`, card);
                             }
                         }
                     }
@@ -223,10 +223,8 @@ class ProjectAction extends action_base_1.ActionBase {
     findCard(columns) {
         return __awaiter(this, void 0, void 0, function* () {
             for (const column of columns) {
-                const response = yield this.context.octokit.rest.projects.listCards({
-                    column_id: column.id
-                });
-                const matchingCard = response.data.find(card => { var _a; return card.content_url === ((_a = this.context.content.issue) === null || _a === void 0 ? void 0 : _a.url); });
+                const cards = yield projects_requests_1.ProjectsRequests.getCards(this.context, column);
+                const matchingCard = cards.find(card => { var _a; return card.content_url === ((_a = this.context.content.issue) === null || _a === void 0 ? void 0 : _a.url); });
                 if (matchingCard) {
                     return matchingCard;
                 }
@@ -581,18 +579,19 @@ class ProjectsRequests {
             }
         });
     }
-    static createCard(context, column) {
-        var _a;
+    static createCard(context, column_id, content_id, content_type) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield context.octokit.rest.projects.createCard({
-                    column_id: column.id,
-                    content_id: (_a = context.content) === null || _a === void 0 ? void 0 : _a.id,
-                    content_type: context.content.type
+                const response = yield context.octokit.rest.projects.createCard({
+                    column_id,
+                    content_id,
+                    content_type
                 });
+                return response.data;
             }
             catch (error) {
                 logger_1.Logger.error(error);
+                return null;
             }
         });
     }

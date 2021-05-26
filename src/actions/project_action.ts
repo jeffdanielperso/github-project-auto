@@ -46,8 +46,13 @@ export class ProjectAction extends ActionBase {
               Logger.debugObject(`Found matching card:`, matchingCard);
             } else {
               Logger.debug(`No matching card => creation`);
-              // const test = await createCard(context, matchingColumn);
-              // debugLog(`TestResult ${JSON.stringify(test, null, '\t')}`);
+              const card = await ProjectsRequests.createCard(
+                this.context,
+                matchingColumn.id,
+                this.context.content.id,
+                this.context.content.type
+              );
+              Logger.debugObject(`Card created`, card);
             }
           }
         }
@@ -86,10 +91,8 @@ export class ProjectAction extends ActionBase {
 
   private async findCard(columns: Columns): Promise<Card | null> {
     for (const column of columns) {
-      const response = await this.context.octokit.rest.projects.listCards({
-        column_id: column.id
-      });
-      const matchingCard = response.data.find(
+      const cards = await ProjectsRequests.getCards(this.context, column);
+      const matchingCard = cards.find(
         card => card.content_url === this.context.content.issue?.url
       );
       if (matchingCard) {
