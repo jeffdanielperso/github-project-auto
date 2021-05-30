@@ -26,7 +26,7 @@ class ActionBase {
         return this._needAsync;
     }
     log(message) {
-        logger_1.Logger.debug(`${typeof this}: ${message}`);
+        logger_1.Logger.debug(`${this.constructor.name}: ${message}`);
     }
 }
 exports.ActionBase = ActionBase;
@@ -177,6 +177,7 @@ class ProjectAction extends action_base_1.ActionBase {
                     this.log('Started');
                     // Get projects
                     const projects = yield this.getProjects();
+                    this.log(`Projects loaded: ${JSON.stringify(projects.map(m => m.name), null, '\n')}`);
                     // Get matching projects
                     const matchingProjects = projects.filter(p => p.name === this.context.inputs.project);
                     this.log(`Matching project(s): ${matchingProjects.length}`);

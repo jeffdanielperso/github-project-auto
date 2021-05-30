@@ -24,7 +24,7 @@ export abstract class ActionBase {
   }
 
   log(message: string): void {
-    Logger.debug(`${typeof this}: ${message}`);
+    Logger.debug(`${this.constructor.name}: ${message}`);
   }
 
   abstract hasToRun(): boolean;

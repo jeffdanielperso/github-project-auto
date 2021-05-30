@@ -21,7 +21,7 @@ export class ProjectAction extends ActionBase {
         // Get projects
         const projects = await this.getProjects();
         this.log(
-          `Projects: ${JSON.stringify(
+          `Projects loaded: ${JSON.stringify(
             projects.map(m => m.name),
             null,
             '\n'
