@@ -23,13 +23,6 @@ export class ProjectAction extends ActionBase {
 
         // Get projects
         const projects = await this.getProjects();
-        this.log(
-          `Projects loaded: ${JSON.stringify(
-            projects.map(m => m.name),
-            null,
-            '\n'
-          )}`
-        );
 
         // Get matching projects
         const matchingProjects = projects.filter(

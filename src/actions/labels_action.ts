@@ -44,14 +44,14 @@ export class LabelAction extends ActionBase {
           labels,
           content.labels.map(label => label.name)
         );
-        if (diffAdd) {
+        if (diffAdd.length) {
           this.log(`Adding labels: ${diffAdd.join(', ')}`);
         }
         const diffRemove = _.difference(
           content.labels.map(label => label.name),
           labels
         );
-        if (diffAdd) {
+        if (diffAdd.length) {
           this.log(`Removing labels: ${diffRemove.join(', ')}`);
         }
 
