@@ -16,6 +16,8 @@ export class ProjectAction extends ActionBase {
   async run(): Promise<ActionResult | undefined> {
     if (this.hasToRun()) {
       try {
+        this.log('Started');
+
         // Get projects
         const projects = await this.getProjects();
 
@@ -23,6 +25,7 @@ export class ProjectAction extends ActionBase {
         const matchingProjects = projects.filter(
           p => p.name === this.context.inputs.project
         );
+        this.log(`Matching project(s): ${matchingProjects.length}`);
 
         // Try & Run the action for all matching Projects
         for (const project of matchingProjects) {
@@ -39,6 +42,10 @@ export class ProjectAction extends ActionBase {
 
           // Found matching Column
           if (matchingColumn) {
+            this.log(
+              `Project '${project.name}' - Found matching column '${matchingColumn.name}'`
+            );
+
             // Look for matching Card
             const matchingCard = await this.findCard(columns);
             if (matchingCard) {
@@ -58,11 +65,16 @@ export class ProjectAction extends ActionBase {
                 this.context.content.type
               );
             }
+          } else {
+            this.log(`Project '${project.name}' - No matching column`);
           }
         }
+
+        this.log('Ended - Success');
         return ActionResult.Success;
       } catch (error) {
         Logger.error(error);
+        this.log('Ended - Failed');
         return ActionResult.Failed;
       }
     }

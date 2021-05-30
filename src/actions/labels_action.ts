@@ -24,27 +24,34 @@ export class LabelAction extends ActionBase {
   async run(): Promise<ActionResult | undefined> {
     if (this.hasToRun()) {
       try {
+        this.log('Started');
+
         const content = this.context.content.issue as Issue;
 
         // Generate label list after Add & Remove
         let labels = content.labels.map(label => label.name);
+        this.log(`Current labels: ${JSON.stringify(labels, null, '\t')}`);
         for (const label of this.labelsToAdd) {
           if (!labels.includes(labels)) {
             labels.push(label);
           }
         }
         labels = labels.filter(value => !this.labelsToRemove.includes(value));
+        this.log(`Update labels to: ${JSON.stringify(labels, null, '\t')}`);
 
         // Update Issue labels
         if (this.needAsync) {
           await IssuesRequests.updateLabels(this.context, labels);
+          this.log(`Ended - Success`);
           return ActionResult.Success;
         } else {
           IssuesRequests.updateLabels(this.context, labels as string[]);
+          this.log(`Ended - Asynchronous - Still running`);
           return undefined;
         }
       } catch (error) {
         Logger.error(error);
+        this.log(`Ended - Failed`);
         return ActionResult.Failed;
       }
     }

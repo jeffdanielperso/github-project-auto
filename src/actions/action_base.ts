@@ -1,4 +1,5 @@
 import {ActionContext} from '../context/context';
+import {Logger} from '../logs/logger';
 
 export enum ActionResult {
   Success,
@@ -20,6 +21,10 @@ export abstract class ActionBase {
   constructor(context: ActionContext, needAsync = false) {
     this._context = context;
     this._needAsync = needAsync;
+  }
+
+  log(message: string): void {
+    Logger.debug(`${typeof this}: ${message}`);
   }
 
   abstract hasToRun(): boolean;

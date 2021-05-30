@@ -2,12 +2,13 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 6233:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ActionBase = exports.ActionResult = void 0;
+const logger_1 = __nccwpck_require__(9530);
 var ActionResult;
 (function (ActionResult) {
     ActionResult[ActionResult["Success"] = 0] = "Success";
@@ -23,6 +24,9 @@ class ActionBase {
     }
     get needAsync() {
         return this._needAsync;
+    }
+    log(message) {
+        logger_1.Logger.debug(`${typeof this}: ${message}`);
     }
 }
 exports.ActionBase = ActionBase;
@@ -66,27 +70,33 @@ class LabelAction extends action_base_1.ActionBase {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.hasToRun()) {
                 try {
+                    this.log('Started');
                     const content = this.context.content.issue;
                     // Generate label list after Add & Remove
                     let labels = content.labels.map(label => label.name);
+                    this.log(`Current labels: ${JSON.stringify(labels, null, '\t')}`);
                     for (const label of this.labelsToAdd) {
                         if (!labels.includes(labels)) {
                             labels.push(label);
                         }
                     }
                     labels = labels.filter(value => !this.labelsToRemove.includes(value));
+                    this.log(`Update labels to: ${JSON.stringify(labels, null, '\t')}`);
                     // Update Issue labels
                     if (this.needAsync) {
                         yield issues_requests_1.IssuesRequests.updateLabels(this.context, labels);
+                        this.log(`Ended - Success`);
                         return action_base_1.ActionResult.Success;
                     }
                     else {
                         issues_requests_1.IssuesRequests.updateLabels(this.context, labels);
+                        this.log(`Ended - Asynchronous - Still running`);
                         return undefined;
                     }
                 }
                 catch (error) {
                     logger_1.Logger.error(error);
+                    this.log(`Ended - Failed`);
                     return action_base_1.ActionResult.Failed;
                 }
             }
@@ -164,10 +174,12 @@ class ProjectAction extends action_base_1.ActionBase {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.hasToRun()) {
                 try {
+                    this.log('Started');
                     // Get projects
                     const projects = yield this.getProjects();
                     // Get matching projects
                     const matchingProjects = projects.filter(p => p.name === this.context.inputs.project);
+                    this.log(`Matching project(s): ${matchingProjects.length}`);
                     // Try & Run the action for all matching Projects
                     for (const project of matchingProjects) {
                         // Get Columns of Project
@@ -176,6 +188,7 @@ class ProjectAction extends action_base_1.ActionBase {
                         const matchingColumn = columns.find(column => column.name === this.context.inputs.column);
                         // Found matching Column
                         if (matchingColumn) {
+                            this.log(`Project '${project.name}' - Found matching column '${matchingColumn.name}'`);
                             // Look for matching Card
                             const matchingCard = yield this.findCard(columns);
                             if (matchingCard) {
@@ -187,11 +200,16 @@ class ProjectAction extends action_base_1.ActionBase {
                                 yield projects_requests_1.ProjectsRequests.createCard(this.context, matchingColumn.id, this.context.content.id, this.context.content.type);
                             }
                         }
+                        else {
+                            this.log(`Project '${project.name}' - No matching column`);
+                        }
                     }
+                    this.log('Ended - Success');
                     return action_base_1.ActionResult.Success;
                 }
                 catch (error) {
                     logger_1.Logger.error(error);
+                    this.log('Ended - Failed');
                     return action_base_1.ActionResult.Failed;
                 }
             }
