@@ -95,7 +95,12 @@ export class ProjectAction extends ActionBase {
       projects.push(project);
     }
 
-    const repoProjects = await ProjectsRequests.getRepoProjects(this.context);
+    const repoProjects = this.context.inputs.repository
+      ? await ProjectsRequests.getRepoProjects(
+          this.context,
+          this.context.inputs.repository
+        )
+      : await ProjectsRequests.getRepoProjectsOfContext(this.context);
     for (const project of repoProjects) {
       projects.push(project);
     }

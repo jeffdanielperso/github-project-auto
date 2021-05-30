@@ -223,7 +223,9 @@ class ProjectAction extends action_base_1.ActionBase {
             for (const project of orgProjects) {
                 projects.push(project);
             }
-            const repoProjects = yield projects_requests_1.ProjectsRequests.getRepoProjects(this.context);
+            const repoProjects = this.context.inputs.repository
+                ? yield projects_requests_1.ProjectsRequests.getRepoProjects(this.context, this.context.inputs.repository)
+                : yield projects_requests_1.ProjectsRequests.getRepoProjectsOfContext(this.context);
             for (const project of repoProjects) {
                 projects.push(project);
             }
@@ -428,6 +430,7 @@ var ActionInput;
     ActionInput["repoToken"] = "repo-token";
     ActionInput["addLabels"] = "add-labels";
     ActionInput["removeLabels"] = "remove-labels";
+    ActionInput["repository"] = "repository";
     ActionInput["project"] = "project";
     ActionInput["column"] = "column";
 })(ActionInput = exports.ActionInput || (exports.ActionInput = {}));
@@ -444,6 +447,7 @@ function getInputs() {
         token: core.getInput(ActionInput.repoToken),
         labelsToAdd: extractLabels(ActionInput.addLabels),
         labelsToRemove: extractLabels(ActionInput.removeLabels),
+        repository: core.getInput(ActionInput.repository),
         project: core.getInput(ActionInput.project),
         column: core.getInput(ActionInput.column)
     };
@@ -534,12 +538,17 @@ class ProjectsRequests {
             }
         });
     }
-    static getRepoProjects(context) {
+    static getRepoProjectsOfContext(context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return ProjectsRequests.getRepoProjects(context, context.repository);
+        });
+    }
+    static getRepoProjects(context, repo) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const repoProjects = yield context.octokit.rest.projects.listForRepo({
                     owner: context.owner,
-                    repo: context.repository
+                    repo
                 });
                 return repoProjects.data;
             }
