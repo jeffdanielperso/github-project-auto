@@ -1,6 +1,6 @@
 {
   "name": "github-project-auto",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "package": "ncc build --source-map --license licenses.txt",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test",
-    "tags": "git push origin :refs/tags/latest && git tag -a $npm_package_version -m \"Github Project Auto - $npm_package_version\" && git tag -fa latest -m \"Github Project Auto - Latest\" && git push origin master --tags"
+    "tags": "git push origin :refs/tags/$npm_package_version && git push origin :refs/tags/latest && git tag -a $npm_package_version -m \"Github Project Auto - $npm_package_version\" && git tag -fa latest -m \"Github Project Auto - Latest\" && git push origin master --tags"
   },
   "repository": {
     "type": "git",
