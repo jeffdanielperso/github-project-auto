@@ -59,6 +59,7 @@ export class ProjectAction extends ActionBase {
             const matchingCard = await this.findCard(columns);
             if (matchingCard) {
               // If card already exists => Move Card
+              this.log(`Moving card to '${matchingColumn.name}'`);
               await ProjectsRequests.moveCard(
                 this.context,
                 matchingColumn.id,
@@ -67,6 +68,7 @@ export class ProjectAction extends ActionBase {
               );
             } else {
               // Else => Create Card
+              this.log(`Creating card in '${matchingColumn.name}'`);
               await ProjectsRequests.createCard(
                 this.context,
                 matchingColumn.id,

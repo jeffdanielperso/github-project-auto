@@ -32,13 +32,13 @@ export class LabelAction extends ActionBase {
         // Generate label list after Add & Remove
         let labels = content.labels.map(label => label.name);
         this.log(`Current labels: ${labels.join(', ')}`);
+
         for (const label of this.labelsToAdd) {
           if (!labels.includes(label)) {
             labels.push(label);
           }
         }
         labels = labels.filter(value => !this.labelsToRemove.includes(value));
-        this.log(`Update labels to: ${JSON.stringify(labels, null, '\t')}`);
 
         const diffAdd = _.difference(
           labels,

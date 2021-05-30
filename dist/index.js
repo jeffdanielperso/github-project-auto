@@ -85,7 +85,6 @@ class LabelAction extends action_base_1.ActionBase {
                         }
                     }
                     labels = labels.filter(value => !this.labelsToRemove.includes(value));
-                    this.log(`Update labels to: ${JSON.stringify(labels, null, '\t')}`);
                     const diffAdd = lodash_1.default.difference(labels, content.labels.map(label => label.name));
                     if (diffAdd) {
                         this.log(`Adding labels: ${diffAdd.join(', ')}`);
@@ -213,10 +212,12 @@ class ProjectAction extends action_base_1.ActionBase {
                             const matchingCard = yield this.findCard(columns);
                             if (matchingCard) {
                                 // If card already exists => Move Card
+                                this.log(`Moving card to '${matchingColumn.name}'`);
                                 yield projects_requests_1.ProjectsRequests.moveCard(this.context, matchingColumn.id, matchingCard.id, 'bottom');
                             }
                             else {
                                 // Else => Create Card
+                                this.log(`Creating card in '${matchingColumn.name}'`);
                                 yield projects_requests_1.ProjectsRequests.createCard(this.context, matchingColumn.id, this.context.content.id, this.context.content.type);
                             }
                         }
