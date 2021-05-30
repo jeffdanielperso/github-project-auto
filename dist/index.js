@@ -90,7 +90,7 @@ class LabelAction extends action_base_1.ActionBase {
                         this.log(`Adding labels: ${diffAdd.join(', ')}`);
                     }
                     const diffRemove = lodash_1.default.difference(content.labels.map(label => label.name), labels);
-                    if (diffAdd.length) {
+                    if (diffRemove.length) {
                         this.log(`Removing labels: ${diffRemove.join(', ')}`);
                     }
                     if (diffAdd || diffRemove) {

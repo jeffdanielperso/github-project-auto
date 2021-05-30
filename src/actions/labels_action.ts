@@ -51,7 +51,7 @@ export class LabelAction extends ActionBase {
           content.labels.map(label => label.name),
           labels
         );
-        if (diffAdd.length) {
+        if (diffRemove.length) {
           this.log(`Removing labels: ${diffRemove.join(', ')}`);
         }
 
