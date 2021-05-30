@@ -86,11 +86,11 @@ class LabelAction extends action_base_1.ActionBase {
                     }
                     labels = labels.filter(value => !this.labelsToRemove.includes(value));
                     const diffAdd = lodash_1.default.difference(labels, content.labels.map(label => label.name));
-                    if (diffAdd) {
+                    if (diffAdd.length) {
                         this.log(`Adding labels: ${diffAdd.join(', ')}`);
                     }
                     const diffRemove = lodash_1.default.difference(content.labels.map(label => label.name), labels);
-                    if (diffAdd) {
+                    if (diffAdd.length) {
                         this.log(`Removing labels: ${diffRemove.join(', ')}`);
                     }
                     if (diffAdd || diffRemove) {
@@ -196,7 +196,6 @@ class ProjectAction extends action_base_1.ActionBase {
                     this.log('Started');
                     // Get projects
                     const projects = yield this.getProjects();
-                    this.log(`Projects loaded: ${JSON.stringify(projects.map(m => m.name), null, '\n')}`);
                     // Get matching projects
                     const matchingProjects = projects.filter(p => p.name === this.context.inputs.project_name);
                     // Try & Run the action for all matching Projects
