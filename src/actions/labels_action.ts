@@ -3,6 +3,7 @@ import {ActionBase, ActionResult} from './action_base';
 import {Logger} from '../logs/logger';
 import {IssuesRequests} from '../github/issues_requests';
 import {Issue} from '../github/types';
+import _ from 'lodash';
 
 export class LabelAction extends ActionBase {
   get labelsToAdd(): string[] {
@@ -30,24 +31,45 @@ export class LabelAction extends ActionBase {
 
         // Generate label list after Add & Remove
         let labels = content.labels.map(label => label.name);
-        this.log(`Current labels: ${JSON.stringify(labels, null, '\t')}`);
+        this.log(`Current labels: ${labels.join(', ')}`);
         for (const label of this.labelsToAdd) {
-          if (!labels.includes(labels)) {
+          if (!labels.includes(label)) {
             labels.push(label);
           }
         }
         labels = labels.filter(value => !this.labelsToRemove.includes(value));
         this.log(`Update labels to: ${JSON.stringify(labels, null, '\t')}`);
 
-        // Update Issue labels
-        if (this.needAsync) {
-          await IssuesRequests.updateLabels(this.context, labels);
-          this.log(`Ended - Success`);
-          return ActionResult.Success;
+        const diffAdd = _.difference(
+          labels,
+          content.labels.map(label => label.name)
+        );
+        if (diffAdd) {
+          this.log(`Adding labels: ${diffAdd.join(', ')}`);
+        }
+        const diffRemove = _.difference(
+          content.labels.map(label => label.name),
+          labels
+        );
+        if (diffAdd) {
+          this.log(`Removing labels: ${diffRemove.join(', ')}`);
+        }
+
+        if (diffAdd || diffRemove) {
+          // Update Issue labels
+          if (this.needAsync) {
+            await IssuesRequests.updateLabels(this.context, labels);
+            this.log(`Ended - Success`);
+            return ActionResult.Success;
+          } else {
+            IssuesRequests.updateLabels(this.context, labels as string[]);
+            this.log(`Ended - Asynchronous - Still running`);
+            return undefined;
+          }
         } else {
-          IssuesRequests.updateLabels(this.context, labels as string[]);
-          this.log(`Ended - Asynchronous - Still running`);
-          return undefined;
+          // No label to update
+          this.log('No label to update');
+          return ActionResult.Success;
         }
       } catch (error) {
         Logger.error(error);

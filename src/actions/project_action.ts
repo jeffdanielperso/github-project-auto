@@ -35,7 +35,6 @@ export class ProjectAction extends ActionBase {
         const matchingProjects = projects.filter(
           p => p.name === this.context.inputs.project_name
         );
-        this.log(`Matching project(s): ${matchingProjects.length}`);
 
         // Try & Run the action for all matching Projects
         for (const project of matchingProjects) {
