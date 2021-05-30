@@ -2,20 +2,23 @@ name: 'Gihub Project Auto'
 description: 'Automation of Github projects'
 author: 'Jeff Daniel'
 inputs:
-  repo-token:
+  github-token:
     description: 'The GitHub token'
     required: false
-    default: ${{ github.token }}
-  add-labels:
+    default: ${{ secrets.GITHUB_TOKEN }}
+  labels-add:
     description: 'Labels to add to an issue, seperated by commas.'
     required: false
-  remove-labels:
+  labels-remove:
     description: 'Labels to be removed from an issue, seperated by commas.'
     required: false
-  project:
+  project-scope:
+    description: 'Scope of the project search. Values: organization | repository | user | all'
+    required: false
+  project-name:
     description: 'The name of the GitHub Project'
     required: false
-  column:
+  project-column:
     description: 'The name of the column to move the issue or pull request to'
     required: true
 runs:
