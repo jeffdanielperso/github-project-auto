@@ -17,7 +17,7 @@ jobs:
       - name: Remove Label `qa-ready`
         uses: jeffdanielperso/github-project-auto@latest
         with:
-          remove-labels: "qa-ready"
+          labels-remove: "qa-ready"
   moved-to-in-progress:
     if: github.event.project_card.column_id == '14432400'
     runs-on: ubuntu-latest
@@ -25,10 +25,11 @@ jobs:
       - name: Add Label `qa-ready`
         uses: jeffdanielperso/github-project-auto@latest
         with:
-          add-labels: "qa-ready"
+          labels-add: "qa-ready"
       - name: Project Orga Board
         uses: jeffdanielperso/github-project-auto@latest
         with:
-          project: "Orga Board"
-          column: "In progress"
-          repo-token: ${{ secrets.GHA_JEFF }}
+          project-scope: "Organization"
+          project-name: "Orga Board"
+          project-column: "In progress"
+          github-token: ${{ secrets.GHA_JEFF }}

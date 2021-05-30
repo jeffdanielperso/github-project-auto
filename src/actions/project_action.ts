@@ -1,4 +1,5 @@
 import {ActionContext} from '../context/context';
+import {Scope} from '../context/inputs';
 import {ProjectsRequests} from '../github/projects_requests';
 import {Card, Columns, Projects} from '../github/types';
 import {Logger} from '../logs/logger';
@@ -10,7 +11,9 @@ export class ProjectAction extends ActionBase {
   }
 
   hasToRun(): boolean {
-    return !(!this.context.inputs.project || !this.context.inputs.column);
+    return !(
+      !this.context.inputs.project_name || !this.context.inputs.project_column
+    );
   }
 
   async run(): Promise<ActionResult | undefined> {
@@ -30,7 +33,7 @@ export class ProjectAction extends ActionBase {
 
         // Get matching projects
         const matchingProjects = projects.filter(
-          p => p.name === this.context.inputs.project
+          p => p.name === this.context.inputs.project_name
         );
         this.log(`Matching project(s): ${matchingProjects.length}`);
 
@@ -44,7 +47,7 @@ export class ProjectAction extends ActionBase {
 
           // Look for matching Column
           const matchingColumn = columns.find(
-            column => column.name === this.context.inputs.column
+            column => column.name === this.context.inputs.project_column
           );
 
           // Found matching Column
@@ -90,24 +93,34 @@ export class ProjectAction extends ActionBase {
   private async getProjects(): Promise<Projects> {
     const projects = [] as Projects;
 
-    const orgProjects = await ProjectsRequests.getOrgProjects(this.context);
-    for (const project of orgProjects) {
-      projects.push(project);
+    if (
+      this.context.inputs.project_scope === Scope.all ||
+      this.context.inputs.project_scope === Scope.organization
+    ) {
+      const orgProjects = await ProjectsRequests.getOrgProjects(this.context);
+      for (const project of orgProjects) {
+        projects.push(project);
+      }
     }
 
-    const repoProjects = this.context.inputs.repository
-      ? await ProjectsRequests.getRepoProjects(
-          this.context,
-          this.context.inputs.repository
-        )
-      : await ProjectsRequests.getRepoProjectsOfContext(this.context);
-    for (const project of repoProjects) {
-      projects.push(project);
+    if (
+      this.context.inputs.project_scope === Scope.all ||
+      this.context.inputs.project_scope === Scope.repository
+    ) {
+      const repoProjects = await ProjectsRequests.getRepoProjects(this.context);
+      for (const project of repoProjects) {
+        projects.push(project);
+      }
     }
 
-    const userProjects = await ProjectsRequests.getUserProjects(this.context);
-    for (const project of userProjects) {
-      projects.push(project);
+    if (
+      this.context.inputs.project_scope === Scope.all ||
+      this.context.inputs.project_scope === Scope.user
+    ) {
+      const userProjects = await ProjectsRequests.getUserProjects(this.context);
+      for (const project of userProjects) {
+        projects.push(project);
+      }
     }
 
     return projects;

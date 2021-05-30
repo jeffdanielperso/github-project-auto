@@ -55,10 +55,10 @@ const logger_1 = __nccwpck_require__(9530);
 const issues_requests_1 = __nccwpck_require__(9615);
 class LabelAction extends action_base_1.ActionBase {
     get labelsToAdd() {
-        return this.context.inputs.labelsToAdd;
+        return this.context.inputs.labels_add;
     }
     get labelsToRemove() {
-        return this.context.inputs.labelsToRemove;
+        return this.context.inputs.labels_remove;
     }
     constructor(context) {
         super(context, false);
@@ -160,6 +160,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ProjectAction = void 0;
+const inputs_1 = __nccwpck_require__(6867);
 const projects_requests_1 = __nccwpck_require__(4133);
 const logger_1 = __nccwpck_require__(9530);
 const action_base_1 = __nccwpck_require__(6233);
@@ -168,7 +169,7 @@ class ProjectAction extends action_base_1.ActionBase {
         super(context, true);
     }
     hasToRun() {
-        return !(!this.context.inputs.project || !this.context.inputs.column);
+        return !(!this.context.inputs.project_name || !this.context.inputs.project_column);
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -179,14 +180,14 @@ class ProjectAction extends action_base_1.ActionBase {
                     const projects = yield this.getProjects();
                     this.log(`Projects loaded: ${JSON.stringify(projects.map(m => m.name), null, '\n')}`);
                     // Get matching projects
-                    const matchingProjects = projects.filter(p => p.name === this.context.inputs.project);
+                    const matchingProjects = projects.filter(p => p.name === this.context.inputs.project_name);
                     this.log(`Matching project(s): ${matchingProjects.length}`);
                     // Try & Run the action for all matching Projects
                     for (const project of matchingProjects) {
                         // Get Columns of Project
                         const columns = yield projects_requests_1.ProjectsRequests.getColumns(this.context, project.id);
                         // Look for matching Column
-                        const matchingColumn = columns.find(column => column.name === this.context.inputs.column);
+                        const matchingColumn = columns.find(column => column.name === this.context.inputs.project_column);
                         // Found matching Column
                         if (matchingColumn) {
                             this.log(`Project '${project.name}' - Found matching column '${matchingColumn.name}'`);
@@ -219,19 +220,26 @@ class ProjectAction extends action_base_1.ActionBase {
     getProjects() {
         return __awaiter(this, void 0, void 0, function* () {
             const projects = [];
-            const orgProjects = yield projects_requests_1.ProjectsRequests.getOrgProjects(this.context);
-            for (const project of orgProjects) {
-                projects.push(project);
+            if (this.context.inputs.project_scope === inputs_1.Scope.all ||
+                this.context.inputs.project_scope === inputs_1.Scope.organization) {
+                const orgProjects = yield projects_requests_1.ProjectsRequests.getOrgProjects(this.context);
+                for (const project of orgProjects) {
+                    projects.push(project);
+                }
             }
-            const repoProjects = this.context.inputs.repository
-                ? yield projects_requests_1.ProjectsRequests.getRepoProjects(this.context, this.context.inputs.repository)
-                : yield projects_requests_1.ProjectsRequests.getRepoProjectsOfContext(this.context);
-            for (const project of repoProjects) {
-                projects.push(project);
+            if (this.context.inputs.project_scope === inputs_1.Scope.all ||
+                this.context.inputs.project_scope === inputs_1.Scope.repository) {
+                const repoProjects = yield projects_requests_1.ProjectsRequests.getRepoProjects(this.context);
+                for (const project of repoProjects) {
+                    projects.push(project);
+                }
             }
-            const userProjects = yield projects_requests_1.ProjectsRequests.getUserProjects(this.context);
-            for (const project of userProjects) {
-                projects.push(project);
+            if (this.context.inputs.project_scope === inputs_1.Scope.all ||
+                this.context.inputs.project_scope === inputs_1.Scope.user) {
+                const userProjects = yield projects_requests_1.ProjectsRequests.getUserProjects(this.context);
+                for (const project of userProjects) {
+                    projects.push(project);
+                }
             }
             return projects;
         });
@@ -423,33 +431,51 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getInputs = exports.extractLabels = exports.ActionInput = void 0;
+exports.getInputs = exports.Scope = exports.ActionInput = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 var ActionInput;
 (function (ActionInput) {
-    ActionInput["repoToken"] = "repo-token";
-    ActionInput["addLabels"] = "add-labels";
-    ActionInput["removeLabels"] = "remove-labels";
-    ActionInput["repository"] = "repository";
-    ActionInput["project"] = "project";
-    ActionInput["column"] = "column";
+    ActionInput["githubToken"] = "github-token";
+    ActionInput["labels_add"] = "labels-add";
+    ActionInput["labels_remove"] = "labels-remove";
+    ActionInput["project_scope"] = "project-scope";
+    ActionInput["project_name"] = "project-name";
+    ActionInput["project_column"] = "project-column";
 })(ActionInput = exports.ActionInput || (exports.ActionInput = {}));
-function extractLabels(type) {
+var Scope;
+(function (Scope) {
+    Scope[Scope["organization"] = 0] = "organization";
+    Scope[Scope["repository"] = 1] = "repository";
+    Scope[Scope["user"] = 2] = "user";
+    Scope[Scope["all"] = 3] = "all";
+})(Scope = exports.Scope || (exports.Scope = {}));
+function extractLabels(inputKey) {
     const labels = core
-        .getInput(type)
+        .getInput(inputKey)
         .split(',')
         .map(value => value.trim());
     return labels.filter(value => ![''].includes(value));
 }
-exports.extractLabels = extractLabels;
+function extractScope(inputKey) {
+    const input = core.getInput(inputKey);
+    if (input) {
+        try {
+            return Scope[input.toLocaleLowerCase()];
+        }
+        catch (_a) {
+            // continue regardless of error
+        }
+    }
+    return Scope.all;
+}
 function getInputs() {
     return {
-        token: core.getInput(ActionInput.repoToken),
-        labelsToAdd: extractLabels(ActionInput.addLabels),
-        labelsToRemove: extractLabels(ActionInput.removeLabels),
-        repository: core.getInput(ActionInput.repository),
-        project: core.getInput(ActionInput.project),
-        column: core.getInput(ActionInput.column)
+        token: core.getInput(ActionInput.githubToken),
+        labels_add: extractLabels(ActionInput.labels_add),
+        labels_remove: extractLabels(ActionInput.labels_remove),
+        project_scope: extractScope(ActionInput.project_scope),
+        project_name: core.getInput(ActionInput.project_name),
+        project_column: core.getInput(ActionInput.project_column)
     };
 }
 exports.getInputs = getInputs;
@@ -538,17 +564,12 @@ class ProjectsRequests {
             }
         });
     }
-    static getRepoProjectsOfContext(context) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return ProjectsRequests.getRepoProjects(context, context.repository);
-        });
-    }
-    static getRepoProjects(context, repo) {
+    static getRepoProjects(context) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const repoProjects = yield context.octokit.rest.projects.listForRepo({
                     owner: context.owner,
-                    repo
+                    repo: context.repository
                 });
                 return repoProjects.data;
             }

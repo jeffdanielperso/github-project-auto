@@ -6,11 +6,11 @@ import {Issue} from '../github/types';
 
 export class LabelAction extends ActionBase {
   get labelsToAdd(): string[] {
-    return this.context.inputs.labelsToAdd;
+    return this.context.inputs.labels_add;
   }
 
   get labelsToRemove(): string[] {
-    return this.context.inputs.labelsToRemove;
+    return this.context.inputs.labels_remove;
   }
 
   constructor(context: ActionContext) {

@@ -24,20 +24,11 @@ export class ProjectsRequests {
     }
   }
 
-  static async getRepoProjectsOfContext(
-    context: ActionContext
-  ): Promise<RepoProjects> {
-    return ProjectsRequests.getRepoProjects(context, context.repository);
-  }
-
-  static async getRepoProjects(
-    context: ActionContext,
-    repo: string
-  ): Promise<RepoProjects> {
+  static async getRepoProjects(context: ActionContext): Promise<RepoProjects> {
     try {
       const repoProjects = await context.octokit.rest.projects.listForRepo({
         owner: context.owner,
-        repo
+        repo: context.repository
       });
       return repoProjects.data;
     } catch (error) {
